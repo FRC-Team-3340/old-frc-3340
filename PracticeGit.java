@@ -7,11 +7,11 @@ public class PracticeGit{
         // Follow appropriate Java syntax. The code here is exactly how it should be.
         // Replace the message with your own and sign with your name at the end.
 
-        System.out.println("Hello, world! -> Ryan");
+        System.out.println("AAAAAAAAAAAAAAAAAAAAAAAAAA! -> Ryan");
         
         // Your messages:
         
-        
+
     }
 }
 
