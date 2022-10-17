@@ -14,3 +14,9 @@ public class PracticeGit{
 
     }
 }
+
+// Once your message is done, commit to main and push to origin either via the Terminal or GitHub Desktop.
+// In the terminal, begin by typing "git add ."
+// Then, type git commit -m "(describe your commit here)".
+// Finally, type "git push".
+// Check out your other members' messages by typing "git pull" every so often. If any issues arise, such as merge conflicts, please let me know.
