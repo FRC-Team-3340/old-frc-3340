@@ -1,14 +1,19 @@
-# FRC-3340 CODE BASE
+### FRC-3340 CODE BASE
 FRC Team 3340 "MagneGeeks" Coding Sub-team repository
 
 
 If you get to this page, congratulations! You can now add, contribute, or break our code for our robots. 
 
-Prerequisites:
-- Please rely on the official FIRST/WPILib docs provided here: https://docs.wpilib.org/en/stable/index.html
-- Have all the tools required at hand. Follow the instruction guides: https://docs.wpilib.org/en/stable/docs/zero-to-robot/step-2/index.html
-- Install GitHub Desktop on your platform here: https://desktop.github.com/. We will be using this tool to commit our code changes to this repository.
-- Please also install Git for your platform here: https://git-scm.com/downloads. When setting up, please configure your default terminal to be Visual Studio Code (or your preferred IDE if mentioned, as long as you are comfortable with it. Avoid Vim for now, it is stupid advanced).
+# Prerequisites:
+The official FIRST/WPILib documentation will be crucial for programming and interfacing with our robot. Click on the link to view them here: https://docs.wpilib.org/en/stable/index.html
+
+Please also install the following tools:
+- [FRC LabVIEW and Game Tools](https://docs.wpilib.org/en/stable/docs/zero-to-robot/step-2/index.html)
+- [Visual Studio Code](https://code.visualstudio.com/)
+- [GitHub Desktop](https://desktop.github.com/)
+    - We will be using this tool to commit our code changes to this repository.
+- [Git for (insert platform here)](https://git-scm.com/downloads.)
+    - Configure your default Terminal to **Visual Studio Code** or your preferred IDE at home.
 
 Important commands for the Terminal when using Git:
 - Update changes with **git add .**
