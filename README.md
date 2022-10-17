@@ -10,6 +10,9 @@ The official FIRST/WPILib documentation will be crucial for programming and inte
 Please also install the following tools:
 - [FRC LabVIEW and Game Tools](https://docs.wpilib.org/en/stable/docs/zero-to-robot/step-2/index.html)
 - [Visual Studio Code](https://code.visualstudio.com/)
+    - Install the following extensions:
+        - WPILib
+        - Extension Pack for Java (also requires you to [install OpenJDK](https://adoptium.net/))
 - [GitHub Desktop](https://desktop.github.com/)
     - We will be using this tool to commit our code changes to this repository.
 - [Git for (insert platform here)](https://git-scm.com/downloads.)
