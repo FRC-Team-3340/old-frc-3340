@@ -33,6 +33,6 @@ Please keep in mind:
 - You can use GitHub's tools to discuss changes or merges (Issues, Pull Reqs., etc.) . However, please also use the #coding Discord channel to discuss about this as well.
 - Keep the code organized. Give them appropriate file names and such. 
 - Even though GitHub is a great tool for source control and collaborative editing, there still will be a backups folder in case something goes fatally wrong.
-
+- Be sure to discuss all changes on Discord. I don't think we'll be using GitHub's built in tools for this. Click to join: https://discord.gg/8gNydQ4pcF
 
 Happy coding, coding team :)
