@@ -16,6 +16,8 @@ public class PracticeGit{
         System.out.println("Hello guys! -> Ismael");
         System.out.println("I do not know what i'm doing! -> williams");
         System.out.println("The FitnessGram Pacer Test is a multistage aerobic capacity test that progresisvely gets more difficult as it continues.");
+        System.out.println("lmao hahahahahahahahahah");
+        
     }
 }
 
