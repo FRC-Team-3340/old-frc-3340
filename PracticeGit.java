@@ -14,13 +14,13 @@ public class PracticeGit{
         System.out.println("Hello guys! -> anderson with the huge bvalls");
 
         System.out.println("Hello guys! -> Ismael");
-<<<<<<< HEAD
+
         System.out.println("I do not know what i'm doing! -> williams");
         System.out.println("We like so many different things in this world" );
-=======
+
         System.out.println("lmao hahahahahahahahahah");
         
->>>>>>> f1f6cd6d98cf24624ad22e0ac76b32fef2186d1a
+
     }
 }
 
