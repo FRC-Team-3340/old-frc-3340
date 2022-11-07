@@ -8,7 +8,7 @@ public class PracticeGit{
         // Replace the message with your own and sign with your name at the end.
 
         System.out.println("Hello, world! -> Ryan");
-        System.out.println("gbvfsd gkjsdbvfkhdsfbkjdgbvbfjsdk bj diasbewrhbg,kxjumn  bn dvsnvcx");
+        System.out.println("williams doesnt know how to download on windows");
 
         // Your messages:
         
