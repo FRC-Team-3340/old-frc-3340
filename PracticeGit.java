@@ -11,13 +11,11 @@ public class PracticeGit{
         System.out.println("williams doesnt know how to download on windows");
 
         // Your messages:
-<<<<<<< HEAD
         System.out.println("Hello guys! -> anderson with the huge bvalls");
 
-=======
         System.out.println("Hello guys! -> Ismael");
         System.out.println("I do not know what i'm doing! -> williams");
->>>>>>> 800d7bff243b024919e02579987fef342abdd6c2
+        System.out.println("The FitnessGram Pacer Test is a multistage aerobic capacity test that progresisvely gets more difficult as it continues.");
     }
 }
 
