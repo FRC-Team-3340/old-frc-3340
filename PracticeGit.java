@@ -23,6 +23,7 @@ public class PracticeGit{
         System.out.println("lmao hahahahahahahahahah");
 
         System.out.println("i am meddling withing, u cannot stop me");
+        System.out.println("where are the comments u lazy motherfucas");
     }
 }
 
