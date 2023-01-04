@@ -1,18 +1,26 @@
 ### FRC-3340 CODE BASE
 FRC Team 3340 "MagneGeeks" Coding Sub-team repository
 
-
 If you get to this page, congratulations! You can now add, contribute, or break our code for our robots. 
+
 
 # Prerequisites:
 The official FIRST/WPILib documentation will be crucial for programming and interfacing with our robot. Click on the link to view them here: https://docs.wpilib.org/en/stable/index.html
+
+# Stuff to know:
+You may notice a ton of new things on the repository. Do not be scared, this is our project for the robot.
+You may need to fetch from origin again to remove the old PracticeGit file.
+Also note: this is the real deal. DO NOT JOKE AROUND!!! :)
+
+You may notice random DS\_\Store files. That's because some of us use Macs.
+Access the Java files inside the folder: 2023\_\Robot\_\Project > src > java > Main.java
 
 Please also install the following tools:
 - [FRC LabVIEW and Game Tools](https://docs.wpilib.org/en/stable/docs/zero-to-robot/step-2/index.html)
 - [Visual Studio Code](https://code.visualstudio.com/)
     - Install the following extensions:
         - WPILib
-        - Extension Pack for Java (also requires you to [install OpenJDK](https://adoptium.net/))
+        - Extension Pack for Java (also requires you to [install a Java development kit](https://adoptium.net/))
 - [GitHub Desktop](https://desktop.github.com/)
     - We will be using this tool to commit our code changes to this repository.
 - [Git for (insert platform here)](https://git-scm.com/downloads.)
