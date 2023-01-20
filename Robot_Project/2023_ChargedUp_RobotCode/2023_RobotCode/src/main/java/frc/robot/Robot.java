@@ -39,17 +39,22 @@ public class Robot extends TimedRobot {
   private AHRS navX_gyro = new AHRS(SPI.Port.kMXP); // Create a variable that interfaces with the navX gyro @ port SPI-MXP
 
   /**   
-
    * This function is run when the robot is first started up and should be used for any
    * initialization code.
    */
 
   @Override
   public void robotInit() {
+    /*
+      Upon initialization of the robot, the gyroscope must always be calibrated.  
+      This is done to ensure the gyroscope is reading a default position upon runtime.
+      Failure to calibrate the gyroscope will result in misreadings that may affect the robot.
+    */
+    navX_gyro.calibrate(); // Calibrate the gyro so that it is set to 0 on all axes. 
+
     m_chooser.setDefaultOption("Default Auto", kDefaultAuto);
     m_chooser.addOption("My Auto", kCustomAuto);
     SmartDashboard.putData("Auto choices", m_chooser);
-    navX_gyro.calibrate();
   }
 
   /**
@@ -60,7 +65,9 @@ public class Robot extends TimedRobot {
    */
 
   @Override
-  public void robotPeriodic() {}
+  public void robotPeriodic() {
+    navX_gyro.getAngle(); // Get the rotation of the gyro every 20ms. Debug only
+  }
 
   /**
    * This autonomous (along with the chooser code above) shows how to select between different
@@ -100,11 +107,7 @@ public class Robot extends TimedRobot {
   /** This function is called periodically during operator control. */
   @Override
   public void teleopPeriodic() {
-    if (navX_gyro.isConnected() == false) {
-      System.out.println(navX_gyro.getYaw());
-      System.out.println(navX_gyro.getAngle());
-      System.out.println(navX_gyro.getPitch());
-    }
+    // insert code that you want the robot to process periodically during teleop.
   }
 
   /** This function is called once when the robot is disabled. */
@@ -129,5 +132,7 @@ public class Robot extends TimedRobot {
 
   /** This function is called periodically whilst in simulation. */
   @Override
-  public void simulationPeriodic() {}
+  public void simulationPeriodic() {
+    navX_gyro.getAngle(); // Get the rotation of the gyro every 20ms. Debug only
+  }
 }
