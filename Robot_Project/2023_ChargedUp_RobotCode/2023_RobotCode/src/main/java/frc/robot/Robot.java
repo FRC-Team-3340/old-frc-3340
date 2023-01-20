@@ -4,10 +4,17 @@
 
 package frc.robot;
 
+// WPILib Imports
+import edu.wpi.first.wpilibj.SPI; // Serial peripheral interface, used for gyro
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj.ADXRS450_Gyro;
+
+// Imports for sensors, motors, and inputs - comment what each import is for
+import com.kauailabs.navx.frc.AHRS; // navX-MXP inertial mass unit, has three-axis gyro and accelerometer
+import edu.wpi.first.wpilibj.Joystick; // Flight stick interface to control the robots
+import edu.wpi.first.wpilibj.drive.DifferentialDrive; // Tank drive - interfacing with the motors of the robot
+
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -15,23 +22,34 @@ import edu.wpi.first.wpilibj.ADXRS450_Gyro;
  * the package after creating this project, you must also update the build.gradle file in the
  * project.
  */
+
 public class Robot extends TimedRobot {
+  /* 
+  What's the difference between public/private in Java?
+    > Declaring something as public or private changes the scope of the particular variable, function, or class.
+        * private -> Scope is limited to the particular class or function only.
+        * public -> Scope is global and can be accessed by other functions, classes, or scripts.
+   */
   private static final String kDefaultAuto = "Default";
   private static final String kCustomAuto = "My Auto";
   private String m_autoSelected;
   private final SendableChooser<String> m_chooser = new SendableChooser<>();
-  private ADXRS450_Gyro gyro = new ADXRS450_Gyro();
 
-  /**
+  // Sensors, Motors, and Inputs - Comment your variables
+  private AHRS navX_gyro = new AHRS(SPI.Port.kMXP); // Create a variable that interfaces with the navX gyro @ port SPI-MXP
+
+  /**   
+
    * This function is run when the robot is first started up and should be used for any
    * initialization code.
    */
+
   @Override
   public void robotInit() {
     m_chooser.setDefaultOption("Default Auto", kDefaultAuto);
     m_chooser.addOption("My Auto", kCustomAuto);
     SmartDashboard.putData("Auto choices", m_chooser);
-    gyro.calibrate();
+    navX_gyro.calibrate();
   }
 
   /**
@@ -40,6 +58,7 @@ public class Robot extends TimedRobot {
    *
    * SmartDashboard integrated updating.
    */
+
   @Override
   public void robotPeriodic() {}
 
@@ -80,7 +99,13 @@ public class Robot extends TimedRobot {
 
   /** This function is called periodically during operator control. */
   @Override
-  public void teleopPeriodic() {}
+  public void teleopPeriodic() {
+    if (navX_gyro.isConnected() == false) {
+      System.out.println(navX_gyro.getYaw());
+      System.out.println(navX_gyro.getAngle());
+      System.out.println(navX_gyro.getPitch());
+    }
+  }
 
   /** This function is called once when the robot is disabled. */
   @Override

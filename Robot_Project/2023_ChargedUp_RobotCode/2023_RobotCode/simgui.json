@@ -6,8 +6,10 @@
           "open": true
         }
       },
-      "window": {
-        "visible": false
+      "navX-Sensor[0]": {
+        "header": {
+          "open": true
+        }
       }
     }
   },
