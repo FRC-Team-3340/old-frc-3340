@@ -4,17 +4,28 @@
 
 package frc.robot;
 
-// WPILib Imports
-import edu.wpi.first.wpilibj.SPI; // Serial peripheral interface, used for gyro
-import edu.wpi.first.wpilibj.TimedRobot;
-import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+//Start: Import Statements
+  // WPILib Required Imports
+  import edu.wpi.first.wpilibj.SPI; // Serial peripheral interface, used for gyro
+  import edu.wpi.first.wpilibj.TimedRobot;  // Robot Type
+  import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;  // Ignore this
+  import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard; // Debug use only on the computer
 
-// Imports for sensors, motors, and inputs - comment what each import is for
-import com.kauailabs.navx.frc.AHRS; // navX-MXP inertial mass unit, has three-axis gyro and accelerometer
-import edu.wpi.first.wpilibj.Joystick; // Flight stick interface to control the robots
-import edu.wpi.first.wpilibj.drive.DifferentialDrive; // Tank drive - interfacing with the motors of the robot
+  //START:  Imports for sensors, motors, and inputs - comment what each import is for
 
+  // Kauai Labs
+  import com.kauailabs.navx.frc.AHRS; // navX-MXP inertial mass unit, has three-axis gyro and accelerometer;;
+
+  // REV Robotics
+  import com.revrobotics.CANSparkMax; // Spark MAX controller through the CAN port on the roboRIO, controls motors;
+  import com.revrobotics.CANSparkMaxLowLevel.MotorType;   // Initializes motor types of the Spark MAX motors.
+
+  // WPILib Other Libraries
+  import edu.wpi.first.wpilibj.Joystick; // Flight stick interface to control the robots
+  import edu.wpi.first.wpilibj.drive.DifferentialDrive; // Tank drive - interfacing with the motors of the robot
+
+  //STOP: Imports for sensors, motors, and inputs
+//STOP: Import Statements
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -24,33 +35,62 @@ import edu.wpi.first.wpilibj.drive.DifferentialDrive; // Tank drive - interfacin
  */
 
 public class Robot extends TimedRobot {
+
   /* 
   What's the difference between public/private in Java?
     > Declaring something as public or private changes the scope of the particular variable, function, or class.
         * private -> Scope is limited to the particular class or function only.
         * public -> Scope is global and can be accessed by other functions, classes, or scripts.
    */
-  private static final String kDefaultAuto = "Default";
-  private static final String kCustomAuto = "My Auto";
-  private String m_autoSelected;
-  private final SendableChooser<String> m_chooser = new SendableChooser<>();
 
-  // Sensors, Motors, and Inputs - Comment your variables
-  private AHRS navX_gyro = new AHRS(SPI.Port.kMXP); // Create a variable that interfaces with the navX gyro @ port SPI-MXP
+
+  // START: initialize classes:
+
+    // WPILib pre-defined variables
+      private static final String kDefaultAuto = "Default";
+      private static final String kCustomAuto = "My Auto";
+      private String m_autoSelected;
+      private final SendableChooser<String> m_chooser = new SendableChooser<>();  
+  
+    // initialize robot and control system
+      private DifferentialDrive robot_3340; // Create robot movement object
+      private Joystick flightstick; // Create joystick interface object
+    
+    //START: Fixed values - please keep these to a minimum as you cannot edit these in code
+      // PORT IDENTIFICATION
+        // Motor Control - left/right motor IDs
+        private static final int leftMotor_deviceID = 0;
+        private static final int rightMotor_deviceID = 1;
+    //STOP: Fixed Numbers
+
+    // Motors and Sensors - comment what each does
+        private AHRS navX_gyro; // initialize navX gyroscope class to interface with the gyro @ port SPI-MXP
+
+        // Motors
+        private CANSparkMax robot_leftMotor;  // create object for left motor
+        private CANSparkMax robot_rightMotor; // create object for right motor
+  // STOP: Initialize classes
 
   /**   
    * This function is run when the robot is first started up and should be used for any
    * initialization code.
    */
-
   @Override
   public void robotInit() {
-    /*
-      Upon initialization of the robot, the gyroscope must always be calibrated.  
-      This is done to ensure the gyroscope is reading a default position upon runtime.
-      Failure to calibrate the gyroscope will result in misreadings that may affect the robot.
-    */
-    navX_gyro.calibrate(); // Calibrate the gyro so that it is set to 0 on all axes. 
+    // Link motors, input devices, and sensors to variables.
+      robot_leftMotor = new CANSparkMax(leftMotor_deviceID, MotorType.kBrushless);
+      robot_rightMotor = new CANSparkMax(rightMotor_deviceID, MotorType.kBrushless);
+      navX_gyro = new AHRS(SPI.Port.kMXP);
+      flightstick = new Joystick(0);
+
+    // Initialize motors and sensors to neutral point to ensure no misreadings occur.
+      robot_leftMotor.restoreFactoryDefaults();
+      robot_rightMotor.restoreFactoryDefaults();
+      navX_gyro.calibrate();
+
+    // Initialize robot
+      robot_3340 = new DifferentialDrive(robot_leftMotor, robot_rightMotor);
+      
 
     m_chooser.setDefaultOption("Default Auto", kDefaultAuto);
     m_chooser.addOption("My Auto", kCustomAuto);
@@ -79,7 +119,7 @@ public class Robot extends TimedRobot {
    * below with additional strings. If using the SendableChooser make sure to add them to the
    * chooser code above as well.
    */
-  @Override
+ @Override
   public void autonomousInit() {
     m_autoSelected = m_chooser.getSelected();
     // m_autoSelected = SmartDashboard.getString("Auto Selector", kDefaultAuto);
@@ -124,7 +164,9 @@ public class Robot extends TimedRobot {
 
   /** This function is called periodically during test mode. */
   @Override
-  public void testPeriodic() {}
+  public void testPeriodic() {
+    robot_3340.tankDrive(flightstick.getX(), flightstick.getY());
+  }
 
   /** This function is called once when the robot is first started up. */
   @Override
