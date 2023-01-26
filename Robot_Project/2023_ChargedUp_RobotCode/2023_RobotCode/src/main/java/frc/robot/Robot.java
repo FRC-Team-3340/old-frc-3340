@@ -59,8 +59,8 @@ public class Robot extends TimedRobot {
     //START: Fixed values - please keep these to a minimum as you cannot edit these in code
       // PORT IDENTIFICATION
         // Motor Control - left/right motor IDs
-        private static final int leftMotor_deviceID = 0;
-        private static final int rightMotor_deviceID = 1;
+        private static final int leftMotor_deviceID = 1;
+        private static final int rightMotor_deviceID = 3;
     //STOP: Fixed Numbers
 
     // Motors and Sensors - comment what each does
@@ -166,6 +166,7 @@ public class Robot extends TimedRobot {
   @Override
   public void testPeriodic() {
     robot_3340.tankDrive(flightstick.getX(), flightstick.getY());
+    System.out.println(navX_gyro.getPitch());
   }
 
   /** This function is called once when the robot is first started up. */
@@ -175,6 +176,7 @@ public class Robot extends TimedRobot {
   /** This function is called periodically whilst in simulation. */
   @Override
   public void simulationPeriodic() {
+    System.out.println(navX_gyro.getPitch());
     navX_gyro.getAngle(); // Get the rotation of the gyro every 20ms. Debug only
   }
 }
