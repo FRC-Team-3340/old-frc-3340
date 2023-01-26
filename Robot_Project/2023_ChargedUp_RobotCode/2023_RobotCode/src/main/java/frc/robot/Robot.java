@@ -23,7 +23,7 @@ package frc.robot;
   // WPILib Other Libraries
   import edu.wpi.first.wpilibj.Joystick; // Flight stick interface to control the robots
   import edu.wpi.first.wpilibj.drive.DifferentialDrive; // Tank drive - interfacing with the motors of the robot
-import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
+  import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
 
   //STOP: Imports for sensors, motors, and inputs
 //STOP: Import Statements
@@ -167,7 +167,8 @@ public class Robot extends TimedRobot {
   /** This function is called periodically during test mode. */
   @Override
   public void testPeriodic() {
-    robot_3340.tankDrive(flightstick.getX(), flightstick.getY());
+    robot_3340.tankDrive(flightstick.getY(), flightstick.getY());
+    // robot_3340.tankDrive(-flightstick.getX(), flightstick.getX());
     System.out.println(navX_gyro.getPitch());
   }
 
