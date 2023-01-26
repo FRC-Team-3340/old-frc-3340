@@ -23,6 +23,7 @@ package frc.robot;
   // WPILib Other Libraries
   import edu.wpi.first.wpilibj.Joystick; // Flight stick interface to control the robots
   import edu.wpi.first.wpilibj.drive.DifferentialDrive; // Tank drive - interfacing with the motors of the robot
+import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
 
   //STOP: Imports for sensors, motors, and inputs
 //STOP: Import Statements
@@ -89,6 +90,7 @@ public class Robot extends TimedRobot {
       navX_gyro.calibrate();
 
     // Initialize robot
+      robot_leftMotor.setInverted(true);
       robot_3340 = new DifferentialDrive(robot_leftMotor, robot_rightMotor);
       
 
