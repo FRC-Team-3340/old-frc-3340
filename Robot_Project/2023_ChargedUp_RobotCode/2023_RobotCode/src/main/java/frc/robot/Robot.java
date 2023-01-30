@@ -61,9 +61,9 @@ public class Robot extends TimedRobot {
       // PORT IDENTIFICATION
         // Motor Control - left/right motor IDs
         private static final int leftMotor_deviceID = 1;
-        private static final int rightMotor_deviceID = 3;
+        private static final int rightMotor_deviceID = 2;
         private static final int leftMotor2_deviceID = 3;
-        private static final int rightMotor2_deviceID = 3;
+        private static final int rightMotor2_deviceID = 4;
 
     //STOP: Fixed Numbers
 
@@ -95,7 +95,7 @@ public class Robot extends TimedRobot {
 
     // Connect both motors together to act as one
       robot_leftMotor = new MotorControllerGroup(leftMotor1, leftMotor2);
-      robot_rightMotor = new MotorControllerGroup(rightMotor1, rightMotor1);
+      robot_rightMotor = new MotorControllerGroup(rightMotor1, rightMotor2);
 
       navX_gyro = new AHRS(SPI.Port.kMXP);
       flightstick = new Joystick(0);
