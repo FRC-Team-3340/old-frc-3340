@@ -62,25 +62,41 @@ public class Robot extends TimedRobot {
         // Motor Control - left/right motor IDs
         private static final int leftMotor_deviceID = 1;
         private static final int rightMotor_deviceID = 3;
+        private static final int leftMotor2_deviceID = 3;
+        private static final int rightMotor2_deviceID = 3;
+
     //STOP: Fixed Numbers
 
     // Motors and Sensors - comment what each does
         private AHRS navX_gyro; // initialize navX gyroscope class to interface with the gyro @ port SPI-MXP
 
         // Motors
-        private CANSparkMax robot_leftMotor;  // create object for left motor
-        private CANSparkMax robot_rightMotor; // create object for right motor
+        private MotorControllerGroup robot_leftMotor;
+        private CANSparkMax leftMotor1;  // create object for left motor 
+        private CANSparkMax leftMotor2; 
+        private MotorControllerGroup robot_rightMotor;
+        private CANSparkMax rightMotor1; // create object for right motor
+        private CANSparkMax rightMotor2; 
+
   // STOP: Initialize classes
 
   /**   
    * This function is run when the robot is first started up and should be used for any
    * initialization code.
    */
+
   @Override
   public void robotInit() {
     // Link motors, input devices, and sensors to variables.
-      robot_leftMotor = new CANSparkMax(leftMotor_deviceID, MotorType.kBrushless);
-      robot_rightMotor = new CANSparkMax(rightMotor_deviceID, MotorType.kBrushless);
+      leftMotor1 = new CANSparkMax(leftMotor_deviceID, MotorType.kBrushless);
+      leftMotor2 = new CANSparkMax(leftMotor2_deviceID, MotorType.kBrushless);
+      rightMotor1 = new CANSparkMax(rightMotor_deviceID, MotorType.kBrushless);
+      rightMotor2 = new CANSparkMax(rightMotor2_deviceID, MotorType.kBrushless);
+
+    // Connect both motors together to act as one
+      robot_leftMotor = new MotorControllerGroup(leftMotor1, leftMotor2);
+      robot_rightMotor = new MotorControllerGroup(rightMotor1, rightMotor1);
+
       navX_gyro = new AHRS(SPI.Port.kMXP);
       flightstick = new Joystick(0);
 
