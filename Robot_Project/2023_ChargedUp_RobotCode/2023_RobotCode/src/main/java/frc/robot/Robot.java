@@ -57,6 +57,11 @@ public class Robot extends TimedRobot {
       private DifferentialDrive robot_3340; // Create robot movement object
       private Joystick flightstick; // Create joystick interface object
     
+
+    // Variables
+    private double initial_power_control = .5;
+    private double power_control = .5;
+
     //START: Fixed values - please keep these to a minimum as you cannot edit these in code
       // PORT IDENTIFICATION
         // Motor Control - left/right motor IDs
@@ -181,7 +186,8 @@ public class Robot extends TimedRobot {
   /** This function is called periodically during test mode. */
   @Override
   public void testPeriodic() {
-    robot_3340.tankDrive(flightstick.getY(), flightstick.getY());
+    power_control = (initial_power_control * ((flightstick.getRawAxis(3) + 1)/6)); 
+    robot_3340.tankDrive(flightstick.getY()/power_control, flightstick.getY()/power_control);
     // robot_3340.tankDrive(-flightstick.getX(), flightstick.getX());
     System.out.println(navX_gyro.getPitch());
   }
