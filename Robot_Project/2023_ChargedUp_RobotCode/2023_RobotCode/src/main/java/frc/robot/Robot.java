@@ -101,8 +101,6 @@ public class Robot extends TimedRobot {
       flightstick = new Joystick(0);
 
     // Initialize motors and sensors to neutral point to ensure no misreadings occur.
-      robot_leftMotor.restoreFactoryDefaults();
-      robot_rightMotor.restoreFactoryDefaults();
       navX_gyro.calibrate();
 
     // Initialize robot
