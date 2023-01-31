@@ -11,7 +11,6 @@ package frc.robot;
   import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;  // Ignore this
   import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard; // Debug use only on the computer
 
-  //START:  Imports for sensors, motors, and inputs - comment what each import is for
 
   // Kauai Labs
   import com.kauailabs.navx.frc.AHRS; // navX-MXP inertial mass unit, has three-axis gyro and accelerometer;;
@@ -24,7 +23,6 @@ package frc.robot;
   import edu.wpi.first.wpilibj.Joystick; // Flight stick interface to control the robots
   import edu.wpi.first.wpilibj.drive.DifferentialDrive; // Tank drive - interfacing with the motors of the robot
   import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
-
   //STOP: Imports for sensors, motors, and inputs
 //STOP: Import Statements
 
@@ -44,7 +42,6 @@ public class Robot extends TimedRobot {
         * public -> Scope is global and can be accessed by other functions, classes, or scripts.
    */
 
-
   // START: initialize classes:
 
     // WPILib pre-defined variables
@@ -55,12 +52,13 @@ public class Robot extends TimedRobot {
   
     // initialize robot and control system
       private DifferentialDrive robot_3340; // Create robot movement object
-      private Joystick flightstick; // Create joystick interface object
+      private Joystick robot_ControlStick; // Create joystick interface object
+      private Joystick robotArm_ControlStick; // Create another joystick for controlling the robot arm.
     
 
     // Variables
-    private double initial_power_control = .5;
-    private double power_control = .5;
+    private double BasePower = .5; // Base maximum power
+    private double DrivePower;  // Power management for robot
 
     //START: Fixed values - please keep these to a minimum as you cannot edit these in code
       // PORT IDENTIFICATION
@@ -103,7 +101,8 @@ public class Robot extends TimedRobot {
       robot_rightMotor = new MotorControllerGroup(rightMotor1, rightMotor2);
 
       navX_gyro = new AHRS(SPI.Port.kMXP);
-      flightstick = new Joystick(0);
+      robot_ControlStick = new Joystick(0);
+      robotArm_ControlStick = new Joystick(1);
 
     // Initialize motors and sensors to neutral point to ensure no misreadings occur.
       navX_gyro.calibrate();
@@ -140,10 +139,11 @@ public class Robot extends TimedRobot {
    * below with additional strings. If using the SendableChooser make sure to add them to the
    * chooser code above as well.
    */
+
  @Override
   public void autonomousInit() {
     m_autoSelected = m_chooser.getSelected();
-    // m_autoSelected = SmartDashboard.getString("Auto Selector", kDefaultAuto);
+    m_autoSelected = SmartDashboard.getString("Auto Selector", kDefaultAuto);
     System.out.println("Auto selected: " + m_autoSelected);
   }
 
@@ -163,7 +163,9 @@ public class Robot extends TimedRobot {
 
   /** This function is called once when teleop is enabled. */
   @Override
-  public void teleopInit() {}
+  public void teleopInit() {
+    
+  }
 
   /** This function is called periodically during operator control. */
   @Override
@@ -186,10 +188,21 @@ public class Robot extends TimedRobot {
   /** This function is called periodically during test mode. */
   @Override
   public void testPeriodic() {
-    power_control = (initial_power_control * ((flightstick.getRawAxis(3) + 1)/6)); 
-    robot_3340.tankDrive(flightstick.getY()/power_control, flightstick.getY()/power_control);
-    // robot_3340.tankDrive(-flightstick.getX(), flightstick.getX());
-    System.out.println(navX_gyro.getPitch());
+    /*
+    Adjust the Drive Power using the slider on the flight stick. Note that the axes of joysticks are
+    always doubles.
+    */
+    DrivePower = BasePower * ((robot_ControlStick.getRawAxis(3) + 1) / 2); 
+
+    /*
+    This is a challenge for coding team: Figure out how to do Arcade drive. Read this part of the docs for reference:
+    Please ask me questions so that I can point you.
+    https://github.wpilib.org/allwpilib/docs/release/java/edu/wpi/first/wpilibj/drive/DifferentialDrive.html
+     */
+
+    robot_3340.tankDrive(robot_ControlStick.getY()*DrivePower, robot_ControlStick.getY()*DrivePower);
+    // System.out.println(navX_gyro.getPitch());
+ 
   }
 
   /** This function is called once when the robot is first started up. */
@@ -200,6 +213,5 @@ public class Robot extends TimedRobot {
   @Override
   public void simulationPeriodic() {
     System.out.println(navX_gyro.getPitch());
-    navX_gyro.getAngle(); // Get the rotation of the gyro every 20ms. Debug only
   }
 }
