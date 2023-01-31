@@ -11,8 +11,6 @@ package frc.robot;
   import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;  // Ignore this
   import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard; // Debug use only on the computer
 
-import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonObjectFormatVisitor;
-
 //START:  Imports for sensors, motors, and inputs - comment what each import is for
 
   // Kauai Labs
