@@ -54,13 +54,13 @@ public class Robot extends TimedRobot {
       private final SendableChooser<String> m_chooser = new SendableChooser<>();  
   
     // initialize robot and control system
-      private DifferentialDrive robot_3340; // Create robot movement object
+      private DifferentialDrive robotControl; // Create robot movement object
       private Joystick robot_ControlStick; // Create joystick interface object
       private Joystick robotArm_ControlStick; // Create another joystick for controlling the robot arm.
     
 
     // Variables
-    private double BasePower = .5; // Base maximum power
+    private double BasePower = .40; // Base maximum power
     private double DrivePower;  // Power management for robot
 
     //START: Fixed values - please keep these to a minimum as you cannot edit these in code
@@ -112,7 +112,7 @@ public class Robot extends TimedRobot {
 
     // Initialize robot
       robot_leftMotor.setInverted(true);
-      robot_3340 = new DifferentialDrive(robot_leftMotor, robot_rightMotor);
+      robotControl = new DifferentialDrive(robot_leftMotor, robot_rightMotor);
       
 
     m_chooser.setDefaultOption("Default Auto", kDefaultAuto);
@@ -195,7 +195,7 @@ public class Robot extends TimedRobot {
     Adjust the Drive Power using the slider on the flight stick. Note that the axes of joysticks are
     always doubles.
     */
-    DrivePower = BasePower * ((robot_ControlStick.getRawAxis(3) + 1) / 2); 
+    DrivePower = BasePower * (Math.abs((robot_ControlStick.getRawAxis(3) - 1)) / 2); 
 
     /*
     This is a challenge for coding team: Figure out how to do Arcade drive. Read this part of the docs for reference:
@@ -203,7 +203,9 @@ public class Robot extends TimedRobot {
     https://github.wpilib.org/allwpilib/docs/release/java/edu/wpi/first/wpilibj/drive/DifferentialDrive.html
      */
 
-    robot_3340.tankDrive(robot_ControlStick.getY()*DrivePower, robot_ControlStick.getY()*DrivePower);
+    robotControl.arcadeDrive(robot_ControlStick.getY()*DrivePower, robot_ControlStick.getZ()*DrivePower);
+
+    // robotControl.tankDrive(robot_ControlStick.getY()*DrivePower, robot_ControlStick.getY()*DrivePower);
     // System.out.println(navX_gyro.getPitch());
  
   }
