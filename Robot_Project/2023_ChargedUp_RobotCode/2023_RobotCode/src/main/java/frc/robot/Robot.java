@@ -6,22 +6,21 @@ package frc.robot;
 
 //Start: Import Statements
   // WPILib Required Imports
-  import edu.wpi.first.wpilibj.SPI; // Serial peripheral interface, used for gyro
-  import edu.wpi.first.wpilibj.TimedRobot;  // Robot Type
-  import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;  // Ignore this
-  import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard; // Debug use only on the computer
+  import edu.wpi.first.wpilibj.SPI;                              // Serial peripheral interface, used for gyro
+  import edu.wpi.first.wpilibj.TimedRobot;                       // Robot Type
+  import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;   // Ignore this
+  import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;    // Debug use only on the computer
 
 //START:  Imports for sensors, motors, and inputs - comment what each import is for
-
   // Kauai Labs
-  import com.kauailabs.navx.frc.AHRS; // navX-MXP inertial mass unit, has three-axis gyro and accelerometer;;
+  import com.kauailabs.navx.frc.AHRS;                            // navX-MXP inertial mass unit, has three-axis gyro and accelerometer
 
   // REV Robotics
-  import com.revrobotics.CANSparkMax; // Spark MAX controller through the CAN port on the roboRIO, controls motors;
-  import com.revrobotics.CANSparkMaxLowLevel.MotorType;   // Initializes motor types of the Spark MAX motors.
+  import com.revrobotics.CANSparkMax;                            // Spark MAX controller, CAN port on the roboRIO; controls motors
+  import com.revrobotics.CANSparkMaxLowLevel.MotorType;          // Initializes motor types of the Spark MAX motors.
 
   // WPILib Other Libraries
-  import edu.wpi.first.wpilibj.Joystick; // Flight stick interface to control the robots
+  import edu.wpi.first.wpilibj.Joystick;                         // Flight stick interface to control the robot's parts
   import edu.wpi.first.wpilibj.drive.DifferentialDrive; // Tank drive - interfacing with the motors of the robot
   import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
   //STOP: Imports for sensors, motors, and inputs
@@ -44,7 +43,6 @@ public class Robot extends TimedRobot {
    */
 
   // START: initialize classes:
-
     // WPILib pre-defined variables
       private static final String kDefaultAuto = "Default";
       private static final String kCustomAuto = "My Auto";
@@ -52,16 +50,15 @@ public class Robot extends TimedRobot {
       private final SendableChooser<String> m_chooser = new SendableChooser<>();  
   
     // initialize robot and control system
-      private DifferentialDrive robotControl; // Create robot movement object
-      private Joystick robot_ControlStick; // Create joystick interface object
+      private DifferentialDrive robot; // Create robot movement object
+      private Joystick robotMove_ControlStick; // Create joystick interface object
       private Joystick robotArm_ControlStick; // Create another joystick for controlling the robot arm.
     
-
     // Variables
     private double BasePower = .40; // Base maximum power
     private double DrivePower;  // Power management for robot
 
-    //START: Fixed values - please keep these to a minimum as you cannot edit these in code
+    //START: Fixed Numbers - please keep these to a minimum as you cannot edit these in code
       // PORT IDENTIFICATION
         // Motor Control - left/right motor IDs
         private static final int leftMotor_deviceID = 1;
@@ -102,17 +99,18 @@ public class Robot extends TimedRobot {
       robot_rightMotor = new MotorControllerGroup(rightMotor1, rightMotor2);
 
       navX_gyro = new AHRS(SPI.Port.kMXP);
-      robot_ControlStick = new Joystick(0);
-      robotArm_ControlStick = new Joystick(1);
+
+    // Joysticks
+      robotMove_ControlStick = new Joystick(0);         // joystick that controls the robot
+      robotArm_ControlStick = new Joystick(1);      // joystick that controls the robot arm
 
     // Initialize motors and sensors to neutral point to ensure no misreadings occur.
       navX_gyro.calibrate();
 
     // Initialize robot
       robot_leftMotor.setInverted(true);
-      robotControl = new DifferentialDrive(robot_leftMotor, robot_rightMotor);
+      robot = new DifferentialDrive(robot_leftMotor, robot_rightMotor);
       
-
     m_chooser.setDefaultOption("Default Auto", kDefaultAuto);
     m_chooser.addOption("My Auto", kCustomAuto);
     SmartDashboard.putData("Auto choices", m_chooser);
@@ -144,7 +142,7 @@ public class Robot extends TimedRobot {
  @Override
   public void autonomousInit() {
     m_autoSelected = m_chooser.getSelected();
-    m_autoSelected = SmartDashboard.getString("Auto Selector", kDefaultAuto);
+    // m_autoSelected = SmartDashboard.getString("Auto Selector", kDefaultAuto);
     System.out.println("Auto selected: " + m_autoSelected);
   }
 
@@ -190,19 +188,10 @@ public class Robot extends TimedRobot {
   @Override
   public void testPeriodic() {
     /*
-    Adjust the Drive Power using the slider on the flight stick. Note that the axes of joysticks are
-    always doubles.
+    Adjust the Drive Power using the slider on the flight stick. Note that the axes of joysticks are always doubles.
     */
-    DrivePower = BasePower * (Math.abs((robot_ControlStick.getRawAxis(3) - 1)) / 2); 
-
-    /*
-    This is a challenge for coding team: Figure out how to do Arcade drive. Read this part of the docs for reference:
-    Please ask me questions so that I can point you.
-    https://github.wpilib.org/allwpilib/docs/release/java/edu/wpi/first/wpilibj/drive/DifferentialDrive.html
-     */
-
-    robotControl.arcadeDrive(robot_ControlStick.getY()*DrivePower, robot_ControlStick.getZ()*DrivePower);
-
+    DrivePower = BasePower * (Math.abs((robotMove_ControlStick.getRawAxis(3) - 1)) / 2); 
+    robot.arcadeDrive(robotMove_ControlStick.getY()*DrivePower, robotMove_ControlStick.getZ()*DrivePower);   // Wilbert, Ryan
     // robotControl.tankDrive(robot_ControlStick.getY()*DrivePower, robot_ControlStick.getY()*DrivePower);
     // System.out.println(navX_gyro.getPitch());
  
@@ -215,6 +204,5 @@ public class Robot extends TimedRobot {
   /** This function is called periodically whilst in simulation. */
   @Override
   public void simulationPeriodic() {
-    System.out.println(navX_gyro.getPitch());
   }
 }
