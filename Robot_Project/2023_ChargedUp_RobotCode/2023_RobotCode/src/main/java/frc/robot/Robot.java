@@ -193,7 +193,7 @@ public class Robot extends TimedRobot {
     DrivePower = BasePower * (Math.abs((robotMove_ControlStick.getRawAxis(3) - 1)) / 2); 
     robot.arcadeDrive(robotMove_ControlStick.getY()*DrivePower, robotMove_ControlStick.getZ()*DrivePower);   // Wilbert, Ryan
     // robotControl.tankDrive(robot_ControlStick.getY()*DrivePower, robot_ControlStick.getY()*DrivePower);
-    // System.out.println(navX_gyro.getPitch());
+    System.out.println(navX_gyro.getPitch());
  
   }
 
