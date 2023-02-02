@@ -125,7 +125,7 @@ public class Robot extends TimedRobot {
 
   @Override
   public void robotPeriodic() {
-    navX_gyro.getAngle(); // Get the rotation of the gyro every 20ms. Debug only
+
   }
 
   /**
@@ -156,6 +156,7 @@ public class Robot extends TimedRobot {
       case kDefaultAuto:
       default:
         // Put default auto code here
+        // https://pdocs.kauailabs.com/navx-mxp/guidance/yaw-drift/
         break;
     }
   }
@@ -194,7 +195,8 @@ public class Robot extends TimedRobot {
     robot.arcadeDrive(robotMove_ControlStick.getY()*DrivePower, robotMove_ControlStick.getZ()*DrivePower);   // Wilbert, Ryan
     // robotControl.tankDrive(robot_ControlStick.getY()*DrivePower, robot_ControlStick.getY()*DrivePower);
     // System.out.println(navX_gyro.getPitch());
- 
+    System.out.println((navX_gyro.getYaw()));
+
   }
 
   /** This function is called once when the robot is first started up. */
