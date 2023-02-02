@@ -157,6 +157,7 @@ public class Robot extends TimedRobot {
       default:
         // Put default auto code here
         // https://pdocs.kauailabs.com/navx-mxp/guidance/yaw-drift/
+        // https://pdocs.kauailabs.com/navx-mxp/advanced/techical-references/
         break;
     }
   }
