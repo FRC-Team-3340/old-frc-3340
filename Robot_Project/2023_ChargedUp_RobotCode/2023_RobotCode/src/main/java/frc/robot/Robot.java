@@ -73,11 +73,11 @@ public class Robot extends TimedRobot {
 
         // Motors
         private MotorControllerGroup robot_leftMotor;
-        private CANSparkMax leftMotor1;  // create object for left motor 
-        private CANSparkMax leftMotor2; 
+        private CANSparkMax leftMotor_front;  // create object for left motor 
+        private CANSparkMax leftMotor_back; 
         private MotorControllerGroup robot_rightMotor;
-        private CANSparkMax rightMotor1; // create object for right motor
-        private CANSparkMax rightMotor2; 
+        private CANSparkMax rightMotor_front; // create object for right motor
+        private CANSparkMax rightMotor_back; 
 
   // STOP: Initialize classes
 
@@ -89,14 +89,14 @@ public class Robot extends TimedRobot {
   @Override
   public void robotInit() {
     // Link motors, input devices, and sensors to variables.
-      leftMotor1 = new CANSparkMax(leftMotor_deviceID, MotorType.kBrushless);
-      leftMotor2 = new CANSparkMax(leftMotor2_deviceID, MotorType.kBrushless);
-      rightMotor1 = new CANSparkMax(rightMotor_deviceID, MotorType.kBrushless);
-      rightMotor2 = new CANSparkMax(rightMotor2_deviceID, MotorType.kBrushless);
+      leftMotor_front = new CANSparkMax(leftMotor_deviceID, MotorType.kBrushless);
+      leftMotor_back = new CANSparkMax(leftMotor2_deviceID, MotorType.kBrushless);
+      rightMotor_front = new CANSparkMax(rightMotor_deviceID, MotorType.kBrushless);
+      rightMotor_back = new CANSparkMax(rightMotor2_deviceID, MotorType.kBrushless);
 
     // Connect both motors together to act as one
-      robot_leftMotor = new MotorControllerGroup(leftMotor1, leftMotor2);
-      robot_rightMotor = new MotorControllerGroup(rightMotor1, rightMotor2);
+      robot_leftMotor = new MotorControllerGroup(leftMotor_front, leftMotor_back);
+      robot_rightMotor = new MotorControllerGroup(rightMotor_front, rightMotor_back);
 
       navX_gyro = new AHRS(SPI.Port.kMXP);
 
