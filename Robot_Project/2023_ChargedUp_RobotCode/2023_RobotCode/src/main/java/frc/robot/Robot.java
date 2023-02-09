@@ -221,20 +221,20 @@ public class Robot extends TimedRobot {
     robot.arcadeDrive(forward*power, turn*power);   // Wilbert, Ryan
   }
 
-  public void tilt_correct() {
+  public void autobalance_robot() {
     float max_incline = 15;
-    double tilt_correction_threshold = 2.5;
+    double autobalance_threshold = 2.5;
     double additive_power;
     double tiltAxis = navX_gyro.getRoll();
     double max_additive_power = 0.1;
 
-    if (tiltAxis > tilt_correction_threshold) {
-      additive_power = (max_additive_power * ((tiltAxis - tilt_correction_threshold)/(max_incline - tilt_correction_threshold)));
+    if (tiltAxis > autobalance_threshold) {
+      additive_power = (max_additive_power * ((tiltAxis - autobalance_threshold)/(max_incline - autobalance_threshold)));
       if (additive_power < 0) {
         additive_power = 0;
       };
-    } else if (tiltAxis > -tilt_correction_threshold) {
-      additive_power = -(max_additive_power * ((tiltAxis + tilt_correction_threshold)/(-max_incline + tilt_correction_threshold))); 
+    } else if (tiltAxis > -autobalance_threshold) {
+      additive_power = -(max_additive_power * ((tiltAxis + autobalance_threshold)/(-max_incline + autobalance_threshold))); 
       if (additive_power > 0) {
         additive_power = 0;
       };   
