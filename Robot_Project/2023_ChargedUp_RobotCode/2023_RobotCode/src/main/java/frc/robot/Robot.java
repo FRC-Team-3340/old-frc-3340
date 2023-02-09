@@ -225,7 +225,8 @@ public class Robot extends TimedRobot {
     float max_incline = 15;
     double autobalance_threshold = 2.5;
     double additive_power;
-    double tiltAxis = navX_gyro.getRoll();
+    // double tiltAxis = navX_gyro.getRoll();
+    double tiltAxis = robotMove_ControlStick.getY() * 15;
     double max_additive_power = 0.1;
 
     if (tiltAxis > autobalance_threshold) {
