@@ -6,6 +6,11 @@
           "open": true
         }
       },
+      "SPARK MAX [1]": {
+        "header": {
+          "open": true
+        }
+      },
       "navX-Sensor[0]": {
         "header": {
           "open": true
@@ -13,6 +18,12 @@
       }
     },
     "RoboRIO": {
+      "5V Rail": {
+        "open": true
+      },
+      "RoboRIO Input": {
+        "open": true
+      },
       "window": {
         "visible": true
       }
@@ -21,7 +32,16 @@
   "NTProvider": {
     "types": {
       "/FMSInfo": "FMSInfo",
+      "/LiveWindow/Ungrouped/DifferentialDrive[1]": "DifferentialDrive",
+      "/LiveWindow/Ungrouped/navX-Sensor[4]": "Gyro",
       "/SmartDashboard/Auto choices": "String Chooser"
+    },
+    "windows": {
+      "/SmartDashboard/Auto choices": {
+        "window": {
+          "visible": true
+        }
+      }
     }
   },
   "NetworkTables": {
@@ -66,5 +86,17 @@
       "open": true
     },
     "visible": true
+  },
+  "NetworkTables View": {
+    "visible": false
+  },
+  "Plot": {
+    "Plot <0>": {
+      "plots": [
+        {
+          "height": 338
+        }
+      ]
+    }
   }
 }

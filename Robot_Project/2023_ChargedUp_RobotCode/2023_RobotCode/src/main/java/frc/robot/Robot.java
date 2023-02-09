@@ -55,7 +55,7 @@ public class Robot extends TimedRobot {
       private Joystick robotArm_ControlStick; // Create another joystick for controlling the robot arm.
     
     // Variables
-    private double BasePower = .40; // Base maximum power
+    private final double maximum_power = .40; // Base maximum power
     private double DrivePower;  // Power management for robot
 
     //START: Fixed Numbers - please keep these to a minimum as you cannot edit these in code
@@ -65,6 +65,8 @@ public class Robot extends TimedRobot {
         private static final int rightMotor_deviceID = 2;
         private static final int leftMotor2_deviceID = 3;
         private static final int rightMotor2_deviceID = 4;
+
+
 
     //STOP: Fixed Numbers
 
@@ -114,7 +116,7 @@ public class Robot extends TimedRobot {
     m_chooser.setDefaultOption("Default Auto", kDefaultAuto);
     m_chooser.addOption("My Auto", kCustomAuto);
     SmartDashboard.putData("Auto choices", m_chooser);
-  }
+    }
 
   /**
    * This function is called every 20 ms, no matter the mode. Use this for items like diagnostics
@@ -155,6 +157,8 @@ public class Robot extends TimedRobot {
         break;
       case kDefaultAuto:
       default:
+        
+
         // Put default auto code here
         // https://pdocs.kauailabs.com/navx-mxp/guidance/yaw-drift/
         // https://pdocs.kauailabs.com/navx-mxp/advanced/techical-references/
@@ -184,7 +188,8 @@ public class Robot extends TimedRobot {
 
   /** This function is called once when test mode is enabled. */
   @Override
-  public void testInit() {}
+  public void testInit() {
+  }
 
   /** This function is called periodically during test mode. */
   @Override
@@ -192,10 +197,14 @@ public class Robot extends TimedRobot {
     /*
     Adjust the Drive Power using the slider on the flight stick. Note that the axes of joysticks are always doubles.
     */
-    DrivePower = BasePower * (Math.abs((robotMove_ControlStick.getRawAxis(3) - 1)) / 2); 
-    robot.arcadeDrive(robotMove_ControlStick.getY()*DrivePower, robotMove_ControlStick.getZ()*DrivePower);   // Wilbert, Ryan
+    DrivePower = maximum_power * (Math.abs((robotMove_ControlStick.getRawAxis(3) - 1)) / 2); 
+    drive(robotMove_ControlStick.getY(), robotMove_ControlStick.getZ(), DrivePower);
+    // System.out.println(robotMove_ControlStick.getRawButton(1));
+    // System.out.println(navX_gyro.getRoll());
     // robotControl.tankDrive(robot_ControlStick.getY()*DrivePower, robot_ControlStick.getY()*DrivePower);
     // System.out.println(navX_gyro.getPitch());
+
+
  
   }
 
@@ -207,4 +216,29 @@ public class Robot extends TimedRobot {
   @Override
   public void simulationPeriodic() {
   }
+
+  public void drive(double forward, double turn, double power) {
+    robot.arcadeDrive(forward*power, turn*power);   // Wilbert, Ryan
+  }
+
+  public void tilt_correct() {
+    float max_incline = 15;
+    double tilt_correction_threshold = 2.5;
+    double additive_power;
+    double tiltAxis = navX_gyro.getRoll();
+    double max_additive_power = 0.1;
+
+    if (tiltAxis > tilt_correction_threshold) {
+      additive_power = (max_additive_power * ((tiltAxis - tilt_correction_threshold)/(max_incline - tilt_correction_threshold)));
+      if (additive_power < 0) {
+        additive_power = 0;
+      };
+    } else if (tiltAxis > -tilt_correction_threshold) {
+      additive_power = -(max_additive_power * ((tiltAxis + tilt_correction_threshold)/(-max_incline + tilt_correction_threshold))); 
+      if (additive_power > 0) {
+        additive_power = 0;
+      };   
+    };
+  };
+  
 }
