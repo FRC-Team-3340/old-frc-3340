@@ -1,5 +1,31 @@
 {
   "NetworkTables": {
+    "Retained Values": {
+      "open": false
+    },
+    "Transitory Values": {
+      "open": false
+    },
+    "transitory": {
+      "FMSInfo": {
+        "open": true
+      },
+      "LiveWindow": {
+        ".status": {
+          "open": true
+        },
+        "open": true
+      },
+      "Shuffleboard": {
+        "open": true
+      },
+      "SmartDashboard": {
+        "Auto choices": {
+          "open": true
+        },
+        "open": true
+      }
+    },
     "types": {
       "/FMSInfo": "FMSInfo",
       "/SmartDashboard/Auto choices": "String Chooser"
@@ -8,5 +34,17 @@
   "NetworkTables Settings": {
     "mode": "Client (NT4)",
     "serverTeam": "localhost"
+  },
+  "Plots": {
+    "Plot <0>": {
+      "plots": [
+        {
+          "height": 338
+        }
+      ],
+      "window": {
+        "visible": false
+      }
+    }
   }
 }

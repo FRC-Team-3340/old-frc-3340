@@ -37,6 +37,11 @@
       "/SmartDashboard/Auto choices": "String Chooser"
     },
     "windows": {
+      "/LiveWindow/Ungrouped/DifferentialDrive[1]": {
+        "window": {
+          "visible": true
+        }
+      },
       "/SmartDashboard/Auto choices": {
         "window": {
           "visible": true
@@ -45,6 +50,12 @@
     }
   },
   "NetworkTables": {
+    "Persistent Values": {
+      "open": false
+    },
+    "Retained Values": {
+      "open": false
+    },
     "transitory": {
       "FMSInfo": {
         "open": true
@@ -66,14 +77,14 @@
           "open": true
         },
         "open": true
+      },
+      "datatable": {
+        "open": true
       }
     }
   },
   "NetworkTables Info": {
     "Clients": {
-      "open": true
-    },
-    "Connections": {
       "open": true
     },
     "Server": {
@@ -83,18 +94,21 @@
       "open": true
     },
     "shuffleboard": {
+      "Publishers": {
+        "open": true
+      },
+      "Subscribers": {
+        "open": true
+      },
       "open": true
-    },
-    "visible": true
-  },
-  "NetworkTables View": {
-    "visible": false
+    }
   },
   "Plot": {
     "Plot <0>": {
       "plots": [
         {
-          "height": 338
+          "height": 420,
+          "legendLocation": 1
         }
       ]
     }
