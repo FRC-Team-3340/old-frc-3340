@@ -22,8 +22,8 @@ package frc.robot;
   // WPILib Other Libraries
   import edu.wpi.first.wpilibj.Joystick;                         // Flight stick interface to control the robot's parts
   import edu.wpi.first.wpilibj.drive.DifferentialDrive; // Tank drive - interfacing with the motors of the robot
-import edu.wpi.first.wpilibj.event.BooleanEvent;
-import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
+  import edu.wpi.first.wpilibj.event.BooleanEvent;
+  import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
   import edu.wpi.first.networktables.DoublePublisher;
   import edu.wpi.first.networktables.NetworkTable;
   import edu.wpi.first.networktables.NetworkTableInstance; 
@@ -64,14 +64,15 @@ public class Robot extends TimedRobot {
       private AHRS navX_gyro = new AHRS(SPI.Port.kMXP); // initialize navX gyroscope class to interface with the gyro @ port SPI-MXP
 
     // Motors - initialize individual motors to later group together
-      final private CANSparkMax robot_motorLF = new CANSparkMax(motorID_LF, MotorType.kBrushless);  // create object for front left motor
-      final private CANSparkMax robot_motorLR = new CANSparkMax(motorID_LR, MotorType.kBrushless);  // create object for rear left motor
-      final private CANSparkMax robot_motorRF = new CANSparkMax(motorID_RF, MotorType.kBrushless);  // create object for front right motor
-      final private CANSparkMax robot_motorRR = new CANSparkMax(motorID_RR, MotorType.kBrushless);  // create object for rear right motor
+      private final CANSparkMax robot_motorLF = new CANSparkMax(motorID_LF, MotorType.kBrushless);  // create object for front left motor
+      private final CANSparkMax robot_motorLR = new CANSparkMax(motorID_LR, MotorType.kBrushless);  // create object for rear left motor
+      private final CANSparkMax robot_motorRF = new CANSparkMax(motorID_RF, MotorType.kBrushless);  // create object for front right motor
+      private final CANSparkMax robot_motorRR = new CANSparkMax(motorID_RR, MotorType.kBrushless);  // create object for rear right motor
 
     // Connect both motors together to act as one
-      final private MotorControllerGroup trackL = new MotorControllerGroup(robot_motorLF, robot_motorLR); // create object for left track 
-      final private MotorControllerGroup trackR = new MotorControllerGroup(robot_motorRF, robot_motorRR); // create object for right track
+      private final MotorControllerGroup trackL = new MotorControllerGroup(robot_motorLF, robot_motorLR); // create object for left track 
+      private final MotorControllerGroup trackR = new MotorControllerGroup(robot_motorRF, robot_motorRR); // create object for right track
+      // The order in which you establish a final variable does not matter. 
 
     // initialize robot and control system
       final private DifferentialDrive robot = new DifferentialDrive(trackL, trackR); // Create robot movement object
