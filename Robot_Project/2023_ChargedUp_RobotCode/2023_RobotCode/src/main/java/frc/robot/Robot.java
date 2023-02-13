@@ -22,8 +22,8 @@ package frc.robot;
   // WPILib Other Libraries
   import edu.wpi.first.wpilibj.Joystick;                         // Flight stick interface to control the robot's parts
   import edu.wpi.first.wpilibj.drive.DifferentialDrive; // Tank drive - interfacing with the motors of the robot
-import edu.wpi.first.wpilibj.event.BooleanEvent;
-import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
+  import edu.wpi.first.wpilibj.event.BooleanEvent;
+  import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
   import edu.wpi.first.networktables.DoublePublisher;
   import edu.wpi.first.networktables.NetworkTable;
   import edu.wpi.first.networktables.NetworkTableInstance; 
