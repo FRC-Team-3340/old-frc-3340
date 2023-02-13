@@ -1,0 +1,22 @@
+  /*
+    function move_robot_arm(movement_input, overwrite) {
+      get current rotation of arm motor
+      if motor is not exceeding 10% or 90% rotation {
+        if (overwrite === true) {
+          set rotation to movement_input, usually given by a preset button.
+          buttons 8, 10, and 12 will trigger this event
+        } else {
+          add rotation to movement_input, as controlled by the D-Pad
+        }
+      }
+      do this for negative and positive if using the D-Pad.
+    }
+   */
+
+   /*
+    // TODO: Create pseudocode for gripper
+    function control_gripper() {
+
+    }
+    */
+}
