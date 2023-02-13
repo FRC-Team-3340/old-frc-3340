@@ -256,4 +256,11 @@ public class Robot extends TimedRobot {
       do this for negative and positive if using the D-Pad.
     }
    */
+
+   /*
+    // TODO: Create pseudocode for gripper
+    function control_gripper() {
+
+    }
+    */
 }
