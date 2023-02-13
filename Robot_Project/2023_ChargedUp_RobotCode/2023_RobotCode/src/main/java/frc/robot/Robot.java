@@ -88,19 +88,21 @@ public class Robot extends TimedRobot {
       public DoublePublisher autobalance_cast;
       public double additive_power;
 
+      private double gyroscope_roll;
+
+      private double joystickX;
+      private double joystickY;
+      private double joystickZ;
+      private double joystickSlider;
+
+      private BooleanEvent joystickTrigger;
+
   // STOP: Initialize classes
 
   // To make it easier for coding team, I listed most of the controls we will be using here.
-    final double joystickX = robot_joystick.getX();
-    final double joystickY = robot_joystick.getY(); 
-    final double joystickZ = robot_joystick.getZ();
-    final double joystickSlider = robot_joystick.getRawAxis(3);
-    BooleanEvent joystickTrigger = robot_joystick.button(1, null);
-    BooleanEvent DPad_Up = robot_joystick.povUp(null);
-    BooleanEvent DPad_Down = robot_joystick.povDown(null);
-
-
-    double gyroscope_roll = navX_gyro.getRoll();
+    // BooleanEvent joystickTrigger = robot_joystick.button(1, null);
+    // BooleanEvent DPad_Up = robot_joystick.povUp(null);
+    // BooleanEvent DPad_Down = robot_joystick.povDown(null);
 
   /**   
    * This function is run when the robot is first started up and should be used for any
@@ -128,6 +130,13 @@ public class Robot extends TimedRobot {
 
   @Override
   public void robotPeriodic() {
+    joystickX = robot_joystick.getX();
+    joystickY = robot_joystick.getY(); 
+    joystickZ = robot_joystick.getZ();
+    joystickSlider = robot_joystick.getRawAxis(3);
+
+    gyroscope_roll = navX_gyro.getRoll();
+
   }
 
   /**
@@ -175,7 +184,16 @@ public class Robot extends TimedRobot {
   /** This function is called periodically during operator control. */
   @Override
   public void teleopPeriodic() {
-    // insert code that you want the robot to process periodically during teleop.
+    joystickX = robot_joystick.getX();
+    joystickY = robot_joystick.getY(); 
+    joystickZ = robot_joystick.getZ();
+    joystickSlider = robot_joystick.getRawAxis(3);
+
+    gyroscope_roll = navX_gyro.getRoll();
+
+    autobalance_robot();
+    drive(additive_power, 0, 1);
+        // insert code that you want the robot to process periodically during teleop.
   }
 
   /** This function is called once when the robot is disabled. */
@@ -187,7 +205,6 @@ public class Robot extends TimedRobot {
   /** This function is called periodically when disabled. */
   @Override
   public void disabledPeriodic() {
-    autobalance_robot();
   }
 
   /** This function is called once when test mode is enabled. */
@@ -198,11 +215,12 @@ public class Robot extends TimedRobot {
   /** This function is called periodically during test mode. */
   @Override
   public void testPeriodic() { 
+    
     DrivePower = maximum_power * (Math.abs(joystickSlider - 1)) / 2;  /*  What does this do?
      *    This allows the slider to control the speed of the robot.
      *  Why do we find the absolute value of the slider minus 1 and then divide it by 2?
      *    This normalizes the slider to a range of 0 to 1, as flippig it up makes it go to the negatives. */
-
+   
     drive(joystickY, joystickX, DrivePower);
 
  
@@ -226,20 +244,27 @@ public class Robot extends TimedRobot {
   public void autobalance_robot() {
     float max_incline = 15;
     double autobalance_threshold = 2.5;
-    double tiltAxis = gyroscope_roll;
-  
-    double max_additive_power = 0.1;
+    double tiltAxis = navX_gyro.getRoll();
+ 
+    double max_additive_power = 0.2;
 
-    if (tiltAxis > autobalance_threshold) {
-      additive_power = (max_additive_power * ((tiltAxis - autobalance_threshold)/(max_incline - autobalance_threshold)));
+    if (tiltAxis > max_incline) {
+        additive_power = - max_additive_power;
 
-    } else if (tiltAxis < -autobalance_threshold) {
-      additive_power = -(max_additive_power * ((tiltAxis + autobalance_threshold)/(-max_incline + autobalance_threshold))); 
-    } else {
-      additive_power = 0;
-    };
+      } else if (tiltAxis < -max_incline) {
+            additive_power = max_additive_power;
 
-    autobalance_cast.set(additive_power);
+      } else if (tiltAxis > autobalance_threshold) {
+          additive_power = -(max_additive_power * ((tiltAxis - autobalance_threshold)/(max_incline - autobalance_threshold)));
+        
+      } else if (tiltAxis < -autobalance_threshold) {
+        additive_power = (max_additive_power * ((tiltAxis + autobalance_threshold)/(-max_incline + autobalance_threshold))); 
+    
+      } else {
+        additive_power = 0;
+      };
+
+      autobalance_cast.set(additive_power);
   }; 
 
   /*
