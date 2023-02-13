@@ -61,7 +61,7 @@ public class Robot extends TimedRobot {
       private static final int motorID_RR = 4;       // Rear Right Motor ID
     
     // Motors and Sensors - comment what each does
-      private AHRS navX_gyro = new AHRS(SPI.Port.kMXP); // initialize navX gyroscope class to interface with the gyro @ port SPI-MXP
+      private final AHRS navX_gyro = new AHRS(SPI.Port.kMXP); // initialize navX gyroscope class to interface with the gyro @ port SPI-MXP
 
     // Motors - initialize individual motors to later group together
       private final CANSparkMax robot_motorLF = new CANSparkMax(motorID_LF, MotorType.kBrushless);  // create object for front left motor
@@ -75,13 +75,14 @@ public class Robot extends TimedRobot {
       // The order in which you establish a final variable does not matter. 
 
     // initialize robot and control system
-      final private DifferentialDrive robot = new DifferentialDrive(trackL, trackR); // Create robot movement object
-      final private Joystick robot_joystick = new Joystick(0); // Create joystick interface object
+      private final DifferentialDrive robot = new DifferentialDrive(trackL, trackR); // Create robot movement object
+      private final Joystick robot_joystick = new Joystick(0); // Create joystick interface object
     
     // Variables
       private double maximum_power = .40; // Base maximum power
       private double DrivePower;  // Power management for robot
 
+      // DEBUGGING TOOLS
       public NetworkTableInstance inst = NetworkTableInstance.getDefault();
       public NetworkTable autobalance_table = inst.getTable("datatable");
       public DoublePublisher autobalance_cast;
@@ -90,18 +91,16 @@ public class Robot extends TimedRobot {
   // STOP: Initialize classes
 
   // To make it easier for coding team, I listed most of the controls we will be using here.
-    double joystickY = robot_joystick.getY(); 
-    double joystickX = robot_joystick.getX();
-    double joystickZ = robot_joystick.getZ();
-    double joystickSlider = robot_joystick.getRawAxis(3);
+    final double joystickX = robot_joystick.getX();
+    final double joystickY = robot_joystick.getY(); 
+    final double joystickZ = robot_joystick.getZ();
+    final double joystickSlider = robot_joystick.getRawAxis(3);
     BooleanEvent joystickTrigger = robot_joystick.button(1, null);
     BooleanEvent DPad_Up = robot_joystick.povUp(null);
     BooleanEvent DPad_Down = robot_joystick.povDown(null);
 
-    double gyroscope_roll = navX_gyro.getRoll();
 
-    
-    
+    double gyroscope_roll = navX_gyro.getRoll();
 
   /**   
    * This function is run when the robot is first started up and should be used for any
@@ -242,4 +241,19 @@ public class Robot extends TimedRobot {
 
     autobalance_cast.set(additive_power);
   }; 
+
+  /*
+    function move_robot_arm(movement_input, overwrite) {
+      get current rotation of arm motor
+      if motor is not exceeding 10% or 90% rotation {
+        if (overwrite === true) {
+          set rotation to movement_input, usually given by a preset button.
+          buttons 8, 10, and 12 will trigger this event
+        } else {
+          add rotation to movement_input, as controlled by the D-Pad
+        }
+      }
+      do this for negative and positive if using the D-Pad.
+    }
+   */
 }
