@@ -50,6 +50,7 @@ public class Robot extends TimedRobot {
     // WPILib pre-defined variables
       private static final String kDefaultAuto = "Default";
       private static final String kCustomAuto = "My Auto";
+      private static final String kAutobalance = "Autobalance";
       private String m_autoSelected;
       private final SendableChooser<String> m_chooser = new SendableChooser<>();  
   
@@ -86,13 +87,16 @@ public class Robot extends TimedRobot {
       public NetworkTableInstance inst = NetworkTableInstance.getDefault();
       public NetworkTable autobalance_table = inst.getTable("datatable");
       public DoublePublisher autobalance_cast;
+      public DoublePublisher robot_forwardSpeed;
+      public DoublePublisher robot_rotationSpeed;
+      public DoublePublisher gyroRoll_output;
       public double additive_power;
 
       private double gyroscope_roll;
 
       private double joystickX;
       private double joystickY;
-      private double joystickZ;
+      // private double joystickZ; // This gets the input from twisting the stick.
       private double joystickSlider;
 
       private BooleanEvent joystickTrigger;
@@ -129,9 +133,7 @@ public class Robot extends TimedRobot {
   public void robotPeriodic() {
     joystickX = robot_joystick.getX();
     joystickY = robot_joystick.getY(); 
-    joystickZ = robot_joystick.getZ();
     joystickSlider = robot_joystick.getRawAxis(3);
-
     gyroscope_roll = navX_gyro.getRoll();
 
   }
@@ -164,10 +166,6 @@ public class Robot extends TimedRobot {
       case kDefaultAuto:
       default:
         
-
-        // Put default auto code here
-        // https://pdocs.kauailabs.com/navx-mxp/guidance/yaw-drift/
-        // https://pdocs.kauailabs.com/navx-mxp/advanced/techical-references/
         break;
     }
   }
@@ -181,14 +179,14 @@ public class Robot extends TimedRobot {
   /** This function is called periodically during operator control. */
   @Override
   public void teleopPeriodic() {
-    joystickX = robot_joystick.getX();
-    joystickY = robot_joystick.getY(); 
-    joystickZ = robot_joystick.getZ();
-    joystickSlider = robot_joystick.getRawAxis(3);
+    // joystickX = robot_joystick.getX();
+    // joystickY = robot_joystick.getY(); 
+    // joystickZ = robot_joystick.getZ();
+    // joystickSlider = robot_joystick.getRawAxis(3);
 
-    gyroscope_roll = navX_gyro.getRoll();
+    // gyroscope_roll = navX_gyro.getRoll();
 
-    autobalance_robot();
+    autobalance_robot(gyroscope_roll);
     drive(additive_power, 0, 1);
         // insert code that you want the robot to process periodically during teleop.
   }
@@ -196,7 +194,10 @@ public class Robot extends TimedRobot {
   /** This function is called once when the robot is disabled. */
   @Override
   public void disabledInit() {
-    autobalance_cast= autobalance_table.getDoubleTopic("additive_power").publish();
+    autobalance_cast= autobalance_table.getDoubleTopic("Autobalance Power").publish();
+    robot_forwardSpeed = autobalance_table.getDoubleTopic("Robot Foward Power").publish();
+    robot_rotationSpeed = autobalance_table.getDoubleTopic("Robot Rotation Power").publish();
+
   }
 
   /** This function is called periodically when disabled. */
@@ -211,8 +212,7 @@ public class Robot extends TimedRobot {
 
   /** This function is called periodically during test mode. */
   @Override
-  public void testPeriodic() { 
-    
+  public void testPeriodic() {  
     DrivePower = maximum_power * (Math.abs(joystickSlider - 1)) / 2;  /*  What does this do?
      *    This allows the slider to control the speed of the robot.
      *  Why do we find the absolute value of the slider minus 1 and then divide it by 2?
@@ -235,12 +235,14 @@ public class Robot extends TimedRobot {
 
   public void drive(double forward, double turn, double power) {
     robot.arcadeDrive(forward*power, turn*power);   // Wilbert, Ryan
+    robot_forwardSpeed.set(forward*power);
+    robot_rotationSpeed.set(turn*power);
   }
 
-  public void autobalance_robot() {
+  public void autobalance_robot(double input_source) {
     float max_incline = 15;
     double autobalance_threshold = 2.5;
-    double tiltAxis = navX_gyro.getRoll();
+    double tiltAxis = input_source;
  
     double max_additive_power = 0.2;
 
@@ -259,7 +261,8 @@ public class Robot extends TimedRobot {
       } else {
         additive_power = 0;
       };
-
+      
+      gyroRoll_output.set(gyroscope_roll);
       autobalance_cast.set(additive_power);
   }; 
 
