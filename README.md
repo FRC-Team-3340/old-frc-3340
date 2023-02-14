@@ -34,21 +34,16 @@ Some rules to keep in mind:
 ## Using WPILib
 
 **Always open WPILib's version of VS Code.** Do not use the version that you download directly from Microsoft, as the WPILib extension may be out of date.
-In VS Code, access the command pallete by pressing Ctrl + Shift + P (⌘ + ⇧ + P on macOS). You should see along the lines of this: ![VS Code Command Pallete](./ImagesForReadMe/CommandPallete.png)
 
-<<<<<<< HEAD
-![VS Code Command Pallete](./ImagesForReadMe/CommandPallete.png)\_
+In VS Code, access the command pallete by pressing Ctrl + Shift + P (⌘ + ⇧ + P on macOS). You should see along the lines of this:
 
-Typing "WPILib" will give you many options. [Click here to view all the options.](https://docs.wpilib.org/en/stable/docs/software/vscode-overview/wpilib-commands-vscode.html)\_
+![VS Code Command Pallete](./ImagesForReadMe/CommandPallete.png)
 
-![VS Code Command Pallete](./ImagesForReadMe/WPILibCommandPallete.png)\_
+Typing "WPILib" will give you many options. [Click here to view all the options.](https://docs.wpilib.org/en/stable/docs/software/vscode-overview/wpilib-commands-vscode.html)
 
-You can also access the command pallete with WPILib prefilled out by clicking on the WPILib icon on the top right of your screen.\_
+![VS Code Command Pallete](./ImagesForReadMe/WPILibCommandPallete.png)
 
-![WPILib Extension Shortcut](./ImagesForReadMe/WPILibExtensionButton.png)\_
-=======
-Typing "WPILib" will give you many options. [Click here to view all the options.](https://docs.wpilib.org/en/stable/docs/software/vscode-overview/wpilib-commands-vscode.html)![VS Code Command Pallete](./ImagesForReadMe/WPILibCommandPallete.png)
->>>>>>> parent of 951df7d (Update README.md)
+_You can also access the command pallete with WPILib prefilled out by clicking on the WPILib icon on the top right of your screen._
 
-You can also access the command pallete with WPILib prefilled out by clicking on the WPILib icon on the top right of your screen. ![WPILib Extension Shortcut](./ImagesForReadMe/WPILibExtensionButton.png)
+![WPILib Extension Shortcut](./ImagesForReadMe/WPILibExtensionButton.png)
 Happy coding, coding team :)
