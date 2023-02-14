@@ -10,17 +10,10 @@ If you have access to this page, you have full access to our code for our robots
 - All project folders will follow the format of \(Year)\_\(Competition Game)\_RobotCode.
 - If you see any weird file types, such as AppleDoubles or DS\_\Store files, feel free to remove them. macOS does this for their purposes.
 
-Please also install the following tools:
+If you wish to code at home, please download and run the [WPILib Installer](https://docs.wpilib.org/en/stable/docs/zero-to-robot/step-2/index.html). Make sure to download their proprietary version of Visual Studio Code, as it will come packaged with an up-to-date version of the WPILib extension and Eclipse Adoptium JDK.
 
-- [FRC LabVIEW and Game Tools](https://docs.wpilib.org/en/stable/docs/zero-to-robot/step-2/index.html)
-- [Visual Studio Code](https://code.visualstudio.com/)
-  - Install the following extensions:
-    - WPILib
-    - Extension Pack for Java (also requires you to [install a Java development kit](https://adoptium.net/))
 - [GitHub Desktop](https://desktop.github.com/)
   - We will be using this tool to commit our code changes to this repository.
-- [Git for (insert platform here)](https://git-scm.com/downloads.)
-  - Configure your default Terminal to **Visual Studio Code** or your preferred IDE at home.
 
 Important commands for the Terminal when using Git:
 
