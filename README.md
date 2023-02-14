@@ -13,16 +13,20 @@ If you have access to this page, you have full access to our code for our robots
 
 ### Coding @ Home:
 
-If you wish to code at home...
+If you wish to code at home:
 
-- download and run the [WPILib Installer](https://docs.wpilib.org/en/stable/docs/zero-to-robot/step-2/index.html).
+- Download and run the [WPILib Installer](https://docs.wpilib.org/en/stable/docs/zero-to-robot/step-2/index.html).
+
   - Be sure to download Visual Studio Code provided by the installer, as it comes packaged with the latest version of the WPILib extension and Eclipse Adoptium JDK.
   - Once you finish, **[click here to learn about how to use WPILib and VS Code.](https://github.com/AllTheSquares/frc-3340#using-wpilib)**
 
-Please also download [GitHub Desktop](https://desktop.github.com/), as this tool allows us to commit our code changes to this repository from an easy-to-understand user interface (keep scrolling to learn more).
+- Download either or both of these source control tools:
+  - **[GitHub Desktop](https://desktop.github.com/)** - an easy-to-use, user-interface based application that allows for easy code changes and retrievals
+    - [Click here to learn how to use GitHub Desktop.]
+  - **[Git for your OS](https://git-scm.com/downloads)** - a terminal-based utility that offers source control directly from the terminal. Recommended for masochists or if you want to enable source control directly from Visual Studio Code.
+    - [Click here to view the commands that we will use with Git.]
 
-If you are a masochist and prefer to use the terminal, download [Git for your specific OS](https://git-scm.com/downloads).
-When using Git from the terminal, know these commands:
+When using Git from the terminal:
 
 - Update changes with **git add .**
 - Commit to the repository with **git commit -m "(comment)"**
