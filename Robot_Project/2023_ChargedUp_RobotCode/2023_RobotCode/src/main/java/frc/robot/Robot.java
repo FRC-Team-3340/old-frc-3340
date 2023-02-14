@@ -99,10 +99,7 @@ public class Robot extends TimedRobot {
 
   // STOP: Initialize classes
 
-  // To make it easier for coding team, I listed most of the controls we will be using here.
-    // BooleanEvent joystickTrigger = robot_joystick.button(1, null);
-    // BooleanEvent DPad_Up = robot_joystick.povUp(null);
-    // BooleanEvent DPad_Down = robot_joystick.povDown(null);
+
 
   /**   
    * This function is run when the robot is first started up and should be used for any
@@ -220,7 +217,6 @@ public class Robot extends TimedRobot {
      *    This allows the slider to control the speed of the robot.
      *  Why do we find the absolute value of the slider minus 1 and then divide it by 2?
      *    This normalizes the slider to a range of 0 to 1, as flippig it up makes it go to the negatives. */
-   
     drive(joystickY, joystickX, DrivePower);
 
  
