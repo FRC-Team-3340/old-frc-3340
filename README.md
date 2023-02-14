@@ -36,4 +36,6 @@ Some rules to keep in mind:
 [Always] open WPILib's version of VS Code. Do not use the version that you download directly from Microsoft.
 In VS Code, access the command pallete by pressing Ctrl + Shift + P (⌘ + ⇧ + P on macOS). You should see along the lines of this: ![VS Code Command Pallete](./ImagesForReadMe/CommandPallete.png)
 
+Typing "WPILib" will give you many options. ![VS Code Command Pallete](./ImagesForReadMe/WPILibCommandPallete.png)
+
 Happy coding, coding team :)
