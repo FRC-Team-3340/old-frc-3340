@@ -5,7 +5,7 @@ If you have access to this page, you have full access to our code for our robots
 
 # Notes:
 
-- [Please read the official FIRST/WPILib documentation while programming the robot.] (https://docs.wpilib.org/en/stable/index.html)
+- [Please read the official FIRST/WPILib documentation while programming the robot.](https://docs.wpilib.org/en/stable/index.html)
   - The documentation is a useful tool for viewing the methods or classes you may need to drive the robot.
 - All project folders will follow the format of \(Year)\_\(Competition Game)\_RobotCode.
 - If you see any weird file types, such as AppleDoubles or DS\_\Store files, feel free to remove them. macOS does this for their purposes.
