@@ -1,9 +1,9 @@
 # Welcome to the FRC #3340 Robot Code Repository.
 
-FRC Team 3340 "MagneGeeks" Coding Sub-team repository
+This repository contains the robot code written by the coding subteam of the "MagneGeeks".
 If you have access to this page, you have full access to our code for our robots.
 
-# Notes:
+## Notes:
 
 - [Please read the official FIRST/WPILib documentation while programming the robot.](https://docs.wpilib.org/en/stable/index.html)
   - The documentation is a useful tool for viewing the methods or classes you may need to drive the robot.
