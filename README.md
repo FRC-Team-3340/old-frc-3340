@@ -11,6 +11,8 @@ If you have access to this page, you have full access to our code for our robots
 - If you see any weird file types, such as AppleDoubles or DS\_\Store files, feel free to remove them. macOS does this for their purposes.
 - Projects can be created using either Java or C++. Use whichever language you are more comfortable with.
 
+# Coding @ Home
+
 If you wish to code at home, please download and run the [WPILib Installer](https://docs.wpilib.org/en/stable/docs/zero-to-robot/step-2/index.html). Make sure to download their proprietary version of Visual Studio Code, as it will come packaged with an up-to-date version of the WPILib extension and Eclipse Adoptium JDK. Once you finish, **[click here to learn about how to use WPILib and VS Code.](https://github.com/AllTheSquares/frc-3340#using-wpilib)**
 
 Please also download [GitHub Desktop](https://desktop.github.com/), as this tool allows us to commit our code changes to this repository from an easy-to-understand user interface (keep scrolling to learn more).
