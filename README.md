@@ -43,7 +43,8 @@ Typing "WPILib" will give you many options. [Click here to view all the options.
 
 ![VS Code Command Pallete](./ImagesForReadMe/WPILibCommandPallete.png)
 
-_You can also access the command pallete with WPILib prefilled out by clicking on the WPILib icon on the top right of your screen._
+_Tip: You can also access the WPILib commands by clicking on the WPILib icon on the top right of your screen._
 
 ![WPILib Extension Shortcut](./ImagesForReadMe/WPILibExtensionButton.png)
+
 Happy coding, coding team :)
