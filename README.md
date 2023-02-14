@@ -1,6 +1,4 @@
-```diff
-@@ Welcome to the FRC-3340 code repository. @@
-```
+# Welcome to the FRC #3340 Robot Code Repository.
 
 FRC Team 3340 "MagneGeeks" Coding Sub-team repository
 If you have access to this page, you have full access to our code for our robots.
