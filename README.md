@@ -33,19 +33,20 @@ When using Git from the terminal:
 - Push your changes to the repository for everyone with **git push**
 - Get any code changes with **git pull**
 
-Some rules to keep in mind:
+## Properly using this repository:
+
+To make everyone's lives easier when using this repository, it is highly recommended to:
 
 - Describe your commits properly, explaining what you changed or removed in the code.
-- You can use GitHub's tools to discuss changes or merges (Issues, Pull Reqs., etc.) . However, please also use the #coding Discord channel to discuss about this as well.
-- Keep the code organized. Give them appropriate file names and such.
-- All changes to the repository are tracked and can be reversed. Please do not sabotage the coding team.
-- If you are working from home, please discuss your changes in the #coding channel on the [FRC 3340 Discord server](https://discord.gg/8gNydQ4pcF).
+- Keep the code organized, giving appropriate file and variable names. [Visual Studio Code offers tools for this.]()
+- Not sabotage the code and/or the team. All changes to the repository are tracked and can be reversed.
+- Discuss your changes in the #coding channel on the [FRC 3340 Discord server](https://discord.gg/8gNydQ4pcF).
 
 ## Using WPILib
 
 **Always open WPILib's version of VS Code.** Do not use the version that you download directly from Microsoft, as the WPILib extension may be out of date.
 
-In VS Code, access the command pallete by pressing Ctrl + Shift + P (⌘ + ⇧ + P on macOS). You should see along the lines of this:
+In VS Code, access the command pallete by pressing Ctrl + Shift + P (⌘ + ⇧ + P on macOS). You should see something like this:
 
 ![VS Code Command Pallete](./ImagesForReadMe/CommandPallete.png)
 
@@ -56,5 +57,21 @@ Typing "WPILib" will give you many options. [Click here to view all the options.
 _Tip: You can also access the WPILib commands by clicking on the WPILib icon on the top right of your screen._
 
 ![WPILib Extension Shortcut](./ImagesForReadMe/WPILibExtensionButton.png)
+
+## Visual Studio Code:
+
+Visual Studio Code is a very popular IDE, and is also easy to use and learn. By default, VS Code has "IntelliSense", which can help you catch errors and/or complete lines of code.
+
+You can also add extensions and color themes to your copy of VS Code to personalize it. Please avoid using IntelliCode, an extension offered by Microsoft, however. According to WPI, it breaks IntelliSense for WPILib.
+
+It is highly recommended to install the Prettier extension to clean up your code upon every save.
+
+### Using VS Code:
+
+By default, opening VS Code will display etiher the Welcome, Getting Started, or blank page:
+
+![Getting Started Page](./ImagesForReadMe/VSCodeGettingStarted.png)
+![Welcome Page](./ImagesForReadMe/VSCodeWelcome.png)
+![Blank Page](./ImagesForReadMe/VSCodeBlank.png)
 
 Happy coding, coding team :)
