@@ -1,5 +1,5 @@
 ```diff
-+ Welcome to the FRC-3340 code repository.
+@@ Welcome to the FRC-3340 code repository. @@
 ```
 
 FRC Team 3340 "MagneGeeks" Coding Sub-team repository
