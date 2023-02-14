@@ -1,4 +1,6 @@
-### FRC-3340 CODE BASE
+```diff
++ Welcome to the FRC-3340 code repository.
+```
 
 FRC Team 3340 "MagneGeeks" Coding Sub-team repository
 If you have access to this page, you have full access to our code for our robots.
@@ -34,6 +36,6 @@ Some rules to keep in mind:
 ## Using WPILib
 
 [Always] open WPILib's version of VS Code. Do not use the version that you download directly from Microsoft.
-In VS Code, access the command pallete by pressing Ctrl + Shift + P (⌘ + ⇧ + P on macOS). You should see along the lines of this: ![VS Code Command Pallete](./ImagesForReadMe/CommandPallete.png)
+In VS Code, access the command pallete by pressing Ctrl + Shift + P (⌘ + ⇧ + P on macOS). You should see along the lines of this: ![VS Code Command Pallete] (./ImagesForReadMe/CommandPallete.png)
 
 Happy coding, coding team :)
