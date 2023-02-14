@@ -58,6 +58,14 @@ _Tip: You can also access the WPILib commands by clicking on the WPILib icon on 
 
 ![WPILib Extension Shortcut](./ImagesForReadMe/WPILibExtensionButton.png)
 
+### Creating a project using WPILib:
+
+To create a project using WPILib, open the command pallete and select the "Create a New Project" option.
+
+![Demonstration of the command pallete to create a new project using WPILib](./ImagesForReadMe/VSCodeCreatingProject.png)
+
+You will
+
 ## Visual Studio Code:
 
 Visual Studio Code is a very popular IDE, and is also easy to use and learn. By default, VS Code has "IntelliSense", which can help you catch errors and/or complete lines of code.
@@ -73,5 +81,7 @@ By default, opening VS Code will display etiher the Welcome, Getting Started, or
 ![Getting Started Page](./ImagesForReadMe/VSCodeGettingStarted.png)
 ![Welcome Page](./ImagesForReadMe/VSCodeWelcome.png)
 ![Blank Page](./ImagesForReadMe/VSCodeBlank.png)
+
+If you have not already, please create a project using WPILib.
 
 Happy coding, coding team :)
