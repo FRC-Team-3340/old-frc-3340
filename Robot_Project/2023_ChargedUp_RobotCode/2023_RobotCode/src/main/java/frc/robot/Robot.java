@@ -14,9 +14,11 @@ package frc.robot;
 //START:  Imports for sensors, motors, and inputs - comment what each import is for
   // Kauai Labs
   import com.kauailabs.navx.frc.AHRS;                            // navX-MXP inertial mass unit, has three-axis gyro and accelerometer
-
   // REV Robotics
   import com.revrobotics.CANSparkMax;                            // Spark MAX controller, CAN port on the roboRIO; controls motors
+  import com.revrobotics.RelativeEncoder;
+  import com.revrobotics.SparkMaxAnalogSensor;
+  import com.revrobotics.SparkMaxRelativeEncoder;
   import com.revrobotics.CANSparkMaxLowLevel.MotorType;          // Initializes motor types of the Spark MAX motors.
 
   // WPILib Other Libraries
@@ -101,6 +103,8 @@ public class Robot extends TimedRobot {
 
       private BooleanEvent joystickTrigger;
 
+      public RelativeEncoder LF_encoder = robot_motorLF.getEncoder();;
+
   // STOP: Initialize classes
 
 
@@ -135,6 +139,8 @@ public class Robot extends TimedRobot {
     joystickY = robot_joystick.getY(); 
     joystickSlider = robot_joystick.getRawAxis(3);
     gyroscope_roll = navX_gyro.getRoll();
+    System.out.println(LF_encoder.getPosition());
+
 
   }
 
@@ -163,6 +169,27 @@ public class Robot extends TimedRobot {
       case kCustomAuto:
         // Put custom auto code here
         break;
+      case kAutobalance:
+        boolean balanced = false;
+        float time_balanced = 0;
+        while (balanced == false) {
+          autobalance_robot(gyroscope_roll);
+          drive(additive_power, 0, 1);
+
+          if (additive_power == 0) {
+            time_balanced++;
+          }
+
+          if (time_balanced == 10000) {
+            System.out.println("Robot is balanced :)");
+            balanced = true;
+          }
+        }
+
+
+        if (balanced == true) {
+          break;
+        }
       case kDefaultAuto:
       default:
         
@@ -262,7 +289,7 @@ public class Robot extends TimedRobot {
         additive_power = 0;
       };
       
-      gyroRoll_output.set(gyroscope_roll);
+      // gyroRoll_output.set(gyroscope_roll);
       autobalance_cast.set(additive_power);
   }; 
 
