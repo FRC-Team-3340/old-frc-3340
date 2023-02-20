@@ -82,7 +82,7 @@ public class Robot extends TimedRobot {
       private final Joystick robot_joystick = new Joystick(0); // Create joystick interface object
     
     // Variables
-      private double maximum_power = .40; // Base maximum power
+      private double maximum_power = 1; // Base maximum power
       private double DrivePower;  // Power management for robot
 
       // DEBUGGING TOOLS
@@ -98,14 +98,14 @@ public class Robot extends TimedRobot {
 
       private double joystickX;
       private double joystickY;
-      // private double joystickZ; // This gets the input from twisting the stick.
+      private double joystickZ; // This gets the input from twisting the stick.
       private double joystickSlider;
 
       private BooleanEvent joystickTrigger;
 
       public RelativeEncoder LF_encoder = robot_motorLF.getEncoder();;
 
-  // STOP: Initialize classes
+  // STOP: Initialize classes4
 
 
 
@@ -136,7 +136,8 @@ public class Robot extends TimedRobot {
   @Override
   public void robotPeriodic() {
     joystickX = robot_joystick.getX();
-    joystickY = robot_joystick.getY(); 
+    joystickY = robot_joystick.getY();
+    joystickZ = robot_joystick.getZ(); 
     joystickSlider = robot_joystick.getRawAxis(3);
     gyroscope_roll = navX_gyro.getRoll();
     System.out.println(LF_encoder.getPosition());
@@ -206,15 +207,8 @@ public class Robot extends TimedRobot {
   /** This function is called periodically during operator control. */
   @Override
   public void teleopPeriodic() {
-    // joystickX = robot_joystick.getX();
-    // joystickY = robot_joystick.getY(); 
-    // joystickZ = robot_joystick.getZ();
-    // joystickSlider = robot_joystick.getRawAxis(3);
+    int position = (robot_joystick.getRawButton(1)) ? 1:0 ;   
 
-    // gyroscope_roll = navX_gyro.getRoll();
-
-    autobalance_robot(gyroscope_roll);
-    drive(additive_power, 0, 1);
         // insert code that you want the robot to process periodically during teleop.
   }
 
