@@ -17,9 +17,8 @@ package frc.robot;
   // REV Robotics
   import com.revrobotics.CANSparkMax;                            // Spark MAX controller, CAN port on the roboRIO; controls motors
   import com.revrobotics.RelativeEncoder;
-  import com.revrobotics.SparkMaxAnalogSensor;
-  import com.revrobotics.SparkMaxRelativeEncoder;
   import com.revrobotics.CANSparkMaxLowLevel.MotorType;          // Initializes motor types of the Spark MAX motors.
+  import com.revrobotics.REVLibError;
 
   // WPILib Other Libraries
   import edu.wpi.first.wpilibj.Joystick;                         // Flight stick interface to control the robot's parts
@@ -62,6 +61,8 @@ public class Robot extends TimedRobot {
       private static final int motorID_RF = 2;       // Front Right Motor ID
       private static final int motorID_LR = 3;       // Rear Left Motor ID
       private static final int motorID_RR = 4;       // Rear Right Motor ID
+      private static final int motorID_arm = 7;        // Arm Motor ID
+
     
     // Motors and Sensors - comment what each does
       private final AHRS navX_gyro = new AHRS(SPI.Port.kMXP); // initialize navX gyroscope class to interface with the gyro @ port SPI-MXP
@@ -71,7 +72,8 @@ public class Robot extends TimedRobot {
       private final CANSparkMax robot_motorLR = new CANSparkMax(motorID_LR, MotorType.kBrushless);  // create object for rear left motor
       private final CANSparkMax robot_motorRF = new CANSparkMax(motorID_RF, MotorType.kBrushless);  // create object for front right motor
       private final CANSparkMax robot_motorRR = new CANSparkMax(motorID_RR, MotorType.kBrushless);  // create object for rear right motor
-
+      private final CANSparkMax robot_motorArm = new CANSparkMax(motorID_arm, MotorType.kBrushless);
+      
     // Connect both motors together to act as one
       private final MotorControllerGroup trackL = new MotorControllerGroup(robot_motorLF, robot_motorLR); // create object for left track 
       private final MotorControllerGroup trackR = new MotorControllerGroup(robot_motorRF, robot_motorRR); // create object for right track
@@ -103,7 +105,7 @@ public class Robot extends TimedRobot {
 
       private BooleanEvent joystickTrigger;
 
-      public RelativeEncoder LF_encoder = robot_motorLF.getEncoder();;
+      public RelativeEncoder arm_encoder = robot_motorArm.getEncoder();
 
   // STOP: Initialize classes4
 
@@ -140,7 +142,7 @@ public class Robot extends TimedRobot {
     joystickZ = robot_joystick.getZ(); 
     joystickSlider = robot_joystick.getRawAxis(3);
     gyroscope_roll = navX_gyro.getRoll();
-    System.out.println(LF_encoder.getPosition());
+    System.out.println(arm_encoder.getPosition());
 
 
   }
@@ -208,6 +210,7 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopPeriodic() {
     int position = (robot_joystick.getRawButton(1)) ? 1:0 ;   
+    System.out.println(position);
 
         // insert code that you want the robot to process periodically during teleop.
   }
