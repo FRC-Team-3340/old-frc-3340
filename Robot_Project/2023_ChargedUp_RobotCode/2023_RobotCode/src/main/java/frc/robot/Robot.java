@@ -61,8 +61,8 @@ public class Robot extends TimedRobot {
       private static final int motorID_RF = 2;       // Front Right Motor ID
       private static final int motorID_LR = 3;       // Rear Left Motor ID
       private static final int motorID_RR = 4;       // Rear Right Motor ID
-      private static final int motorID_arm = 7;        // Arm Motor ID
-
+      private static final int motorID_arm = 7;      // Arm Motor ID
+      private static final int motorID_gripper = 9;
     
     // Motors and Sensors - comment what each does
       private final AHRS navX_gyro = new AHRS(SPI.Port.kMXP); // initialize navX gyroscope class to interface with the gyro @ port SPI-MXP
@@ -73,6 +73,7 @@ public class Robot extends TimedRobot {
       private final CANSparkMax robot_motorRF = new CANSparkMax(motorID_RF, MotorType.kBrushless);  // create object for front right motor
       private final CANSparkMax robot_motorRR = new CANSparkMax(motorID_RR, MotorType.kBrushless);  // create object for rear right motor
       private final CANSparkMax robot_motorArm = new CANSparkMax(motorID_arm, MotorType.kBrushless);
+      private final CANSparkMax robot_motorGripper = new CANSparkMax(motorID_gripper, MotorType.kBrushless); 
       
     // Connect both motors together to act as one
       private final MotorControllerGroup trackL = new MotorControllerGroup(robot_motorLF, robot_motorLR); // create object for left track 
