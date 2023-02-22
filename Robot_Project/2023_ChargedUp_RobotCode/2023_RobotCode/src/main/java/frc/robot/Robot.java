@@ -212,17 +212,15 @@ public class Robot extends TimedRobot {
   public void teleopPeriodic() {
     int position = (robot_joystick.getRawButton(1)) ? 1:0 ;   
     System.out.println(position);
-
         // insert code that you want the robot to process periodically during teleop.
   }
 
   /** This function is called once when the robot is disabled. */
   @Override
   public void disabledInit() {
-    autobalance_cast= autobalance_table.getDoubleTopic("Autobalance Power").publish();
+    autobalance_cast = autobalance_table.getDoubleTopic("Autobalance Power").publish();
     robot_forwardSpeed = autobalance_table.getDoubleTopic("Robot Foward Power").publish();
     robot_rotationSpeed = autobalance_table.getDoubleTopic("Robot Rotation Power").publish();
-
   }
 
   /** This function is called periodically when disabled. */
