@@ -25,13 +25,13 @@ package frc.robot;
 
 // Imports for sensors, motors, and inputs - comment what each import is for
   // Kauai Labs
-  import com.kauailabs.navx.frc.AHRS;                            // navX-MXP inertial mass unit, has three-axis gyro and accelerometer
+    import com.kauailabs.navx.frc.AHRS;                            // navX-MXP inertial mass unit, has three-axis gyro and accelerometer
   // REV Robotics
-  import com.revrobotics.CANSparkMax;                            // Spark MAX controller, CAN port on the roboRIO; controls motors
-  import com.revrobotics.RelativeEncoder;
-import com.revrobotics.CANSparkMax.SoftLimitDirection;
-import com.revrobotics.CANSparkMaxLowLevel.MotorType;          // Initializes motor types of the Spark MAX motors.
-  import com.revrobotics.REVLibError;
+    import com.revrobotics.CANSparkMax;                            // Spark MAX controller, CAN port on the roboRIO; controls motors
+    import com.revrobotics.RelativeEncoder;
+    import com.revrobotics.CANSparkMax.SoftLimitDirection;
+    import com.revrobotics.CANSparkMaxLowLevel.MotorType;          // Initializes motor types of the Spark MAX motors.
+    import com.revrobotics.REVLibError;
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
