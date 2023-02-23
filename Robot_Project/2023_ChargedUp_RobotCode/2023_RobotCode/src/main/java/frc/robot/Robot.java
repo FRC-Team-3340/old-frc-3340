@@ -29,7 +29,8 @@ package frc.robot;
   // REV Robotics
   import com.revrobotics.CANSparkMax;                            // Spark MAX controller, CAN port on the roboRIO; controls motors
   import com.revrobotics.RelativeEncoder;
-  import com.revrobotics.CANSparkMaxLowLevel.MotorType;          // Initializes motor types of the Spark MAX motors.
+import com.revrobotics.CANSparkMax.SoftLimitDirection;
+import com.revrobotics.CANSparkMaxLowLevel.MotorType;          // Initializes motor types of the Spark MAX motors.
   import com.revrobotics.REVLibError;
 
 /**
@@ -132,7 +133,10 @@ public class Robot extends TimedRobot {
       robot_motorArm.restoreFactoryDefaults();
       robot_motorGripper.restoreFactoryDefaults();
 
-
+      robot_motorArm.setSoftLimit(SoftLimitDirection.kForward, 1);
+      robot_motorArm.setSoftLimit(SoftLimitDirection.kReverse, -1);
+      robot_motorArm.enableSoftLimit(SoftLimitDirection.kForward, true);
+      robot_motorArm.enableSoftLimit(SoftLimitDirection.kReverse, true);
     }
 
   /**
@@ -144,6 +148,7 @@ public class Robot extends TimedRobot {
 
   @Override
   public void robotPeriodic() {
+    update_sensor_data();
   }
 
   /**
@@ -202,7 +207,7 @@ public class Robot extends TimedRobot {
   /** This function is called periodically during operator control. */
   @Override
   public void teleopPeriodic() {
-    robot_motorArm.set(joystickSlider);
+    robot_motorArm.set(joystickY);
         // insert code that you want the robot to process periodically during teleop.
   }
 
