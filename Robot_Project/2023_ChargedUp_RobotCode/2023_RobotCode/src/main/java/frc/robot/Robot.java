@@ -261,7 +261,6 @@ public class Robot extends TimedRobot {
   /** This function is called periodically during test mode. */
   @Override
   public void testPeriodic() {  
-    
     robot_motorArm.set(arm_joystick.getY());
   }
 
@@ -329,4 +328,3 @@ public class Robot extends TimedRobot {
     }
    */
 }
-
