@@ -5,8 +5,7 @@
 package frc.robot;
 
 // WPILib Imports
-  // Required imports
-    import edu.wpi.first.wpilibj.SPI;                              // Serial peripheral interface, used for gyro
+    import edu.wpi.first.wpilibj.SPI;                              // Serial peripheral interface, used 
     import edu.wpi.first.wpilibj.TimedRobot;                       // Robot Type
     import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;   // Ignore this
     import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;    // Debug use only on the computer
@@ -24,9 +23,7 @@ package frc.robot;
 
 
 // Imports for sensors, motors, and inputs - comment what each import is for
-  // Kauai Labs
     import com.kauailabs.navx.frc.AHRS;                            // navX-MXP inertial mass unit, has three-axis gyro and accelerometer
-  // REV Robotics
     import com.revrobotics.CANSparkMax;                            // Spark MAX controller, CAN port on the roboRIO; controls motors
     import com.revrobotics.RelativeEncoder;
     import com.revrobotics.CANSparkMax.SoftLimitDirection;
@@ -84,6 +81,7 @@ public class Robot extends TimedRobot {
     // initialize robot and control system
       private final DifferentialDrive robot = new DifferentialDrive(trackL, trackR); // Create robot movement object
       private Joystick robot_joystick = new Joystick(0); // Create joystick interface object
+      private Joystick arm_joystick = new Joystick(1); 
     
     // Variables
       private double maximum_power = 1; // Base maximum power
@@ -96,16 +94,38 @@ public class Robot extends TimedRobot {
       public DoublePublisher robot_forwardSpeed;
       public DoublePublisher robot_rotationSpeed;
       public DoublePublisher gyroRoll_output;
-      public double additive_power;
+      public double autobalance_power;
 
-      private double gyroscope_roll;
+      /* Important commands for getting user input:
+       * joystick.getX(), .getY(), .getZ()
+       * --> get input from the joystick: tilting forward/back, side to side, and twisting respectively.
+       * --> returns a double
+       * 
+       * joystick.getRawAxis(axis)
+       * --> get input from another axis on the joystick. Use axis 3 for the slider on the flight stick.
+       * --> returns a double
+       * 
+       * joystick.getRawButton(button)
+       * --> gets the state (pressed/unpressed) of a button on the joystick (1-16). 
+       * --> returns a boolean, can be converted to integer by writing this code, replacing the pseudocode:
+       *     *this_button* = *joystick*.getRawButton(*button*) 
+       * 
+       * gyro.getYaw(), .getPitch(), .getRoll()
+       * --> gets the yaw, pitch, or roll input of the gyroscope (tilt).
+       * --> returns a double
+       * 
+       * 
+       * 
+       * 
+       */
+
+
+      private double gyroscope_roll = navX_gyro.getRoll();
 
       private double joystickX;
       private double joystickY;
       private double joystickZ; // This gets the input from twisting the stick.
       private double joystickSlider;
-
-      private BooleanEvent joystickTrigger;
 
       public RelativeEncoder arm_encoder = robot_motorArm.getEncoder();
 
@@ -148,7 +168,6 @@ public class Robot extends TimedRobot {
 
   @Override
   public void robotPeriodic() {
-    update_sensor_data();
   }
 
   /**
@@ -179,10 +198,14 @@ public class Robot extends TimedRobot {
       case kAutobalance: 
         boolean balanced = false;
         float time_balanced = 0;
+
         while (balanced == false) {
-          autobalance_robot(gyroscope_roll);
-          drive(additive_power, 0, 1);
-          if (additive_power == 0) {
+          double autobalance_axis = navX_gyro.getRoll();
+
+          autobalance_robot(autobalance_axis);
+          move_robot(autobalance_power, 0, 1);
+
+          if (autobalance_power == 0) {
             time_balanced++;
           }
           if (time_balanced == 10000) {
@@ -193,6 +216,7 @@ public class Robot extends TimedRobot {
         if (balanced == true) {
           break;
         }
+        
       case kDefaultAuto:
       default:
         
@@ -207,7 +231,12 @@ public class Robot extends TimedRobot {
   /** This function is called periodically during operator control. */
   @Override
   public void teleopPeriodic() {
-    robot_motorArm.set(joystickY);
+    DrivePower = maximum_power * (Math.abs(joystickSlider - 1)) / 2;  /*  What does this do?
+    *    This allows the slider to control the speed of the robot.
+    *  Why do we find the absolute value of the slider minus 1 and then divide it by 2?
+    *    This normalizes the slider to a range of 0 to 1, as flippig it up makes it go to the negatives. */
+   move_robot(joystickY, joystickX, DrivePower);
+
         // insert code that you want the robot to process periodically during teleop.
   }
 
@@ -232,11 +261,8 @@ public class Robot extends TimedRobot {
   /** This function is called periodically during test mode. */
   @Override
   public void testPeriodic() {  
-    DrivePower = maximum_power * (Math.abs(joystickSlider - 1)) / 2;  /*  What does this do?
-     *    This allows the slider to control the speed of the robot.
-     *  Why do we find the absolute value of the slider minus 1 and then divide it by 2?
-     *    This normalizes the slider to a range of 0 to 1, as flippig it up makes it go to the negatives. */
-    drive(joystickY, joystickX, DrivePower);
+    
+    robot_motorArm.set(arm_joystick.getY());
   }
 
   /** This function is called once when the robot is first started up. */
@@ -250,7 +276,7 @@ public class Robot extends TimedRobot {
   public void simulationPeriodic() {
   }
 
-  public void drive(double forward, double turn, double power) {
+  public void move_robot(double forward, double turn, double power) {
     robot.arcadeDrive(forward*power, turn*power);   // Wilbert, Ryan
     robot_forwardSpeed.set(forward*power);
     robot_rotationSpeed.set(turn*power);
@@ -264,39 +290,29 @@ public class Robot extends TimedRobot {
     double max_additive_power = 0.2;
 
     if (tiltAxis > max_incline) {
-        additive_power = - max_additive_power;
+        autobalance_power = - max_additive_power;
 
       } else if (tiltAxis < -max_incline) {
-            additive_power = max_additive_power;
+            autobalance_power = max_additive_power;
 
       } else if (tiltAxis > autobalance_threshold) {
-          additive_power = -(max_additive_power * ((tiltAxis - autobalance_threshold)/(max_incline - autobalance_threshold)));
+          autobalance_power = -(max_additive_power * ((tiltAxis - autobalance_threshold)/(max_incline - autobalance_threshold)));
         
       } else if (tiltAxis < -autobalance_threshold) {
-        additive_power = (max_additive_power * ((tiltAxis + autobalance_threshold)/(-max_incline + autobalance_threshold))); 
+        autobalance_power = (max_additive_power * ((tiltAxis + autobalance_threshold)/(-max_incline + autobalance_threshold))); 
     
       } else {
-        additive_power = 0;
+        autobalance_power = 0;
       };
       
       // gyroRoll_output.set(gyroscope_roll);
-      autobalance_cast.set(additive_power);
+      autobalance_cast.set(autobalance_power);
   }; 
 
-  public void update_sensor_data() {
-    // Update Joystick analog inputs:
-    joystickX = robot_joystick.getX();
-    joystickY = robot_joystick.getY();
-    joystickZ = robot_joystick.getZ(); 
-    joystickSlider = robot_joystick.getRawAxis(3);
+  public void move_robot_arm(double input, boolean override) {
     
-    // Update gyroscope axis:
-    gyroscope_roll = navX_gyro.getRoll();
-
-    // Update encoder rotation:
-    arm_encoder = robot_motorArm.getEncoder();
-
   }
+
 
   /*
     function move_robot_arm(movement_input, overwrite) {
@@ -312,12 +328,5 @@ public class Robot extends TimedRobot {
       do this for negative and positive if using the D-Pad.
     }
    */
-
-   /*
-    // TODO: Create pseudocode for gripper
-    function control_gripper() {
-
-    }
-    */
 }
 
