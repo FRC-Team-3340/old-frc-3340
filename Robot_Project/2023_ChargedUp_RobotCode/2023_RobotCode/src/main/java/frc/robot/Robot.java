@@ -265,8 +265,7 @@ public class Robot extends TimedRobot {
   public void testPeriodic() {  
     robot_motorArm.set(-5);
     System.out.println(arm_encoder.getPosition());
-
-
+    robot_motorArm.set(arm_joystick.getY());
   }
 
   /** This function is called once when the robot is first started up. */
@@ -333,4 +332,3 @@ public class Robot extends TimedRobot {
     }
    */
 }
-
