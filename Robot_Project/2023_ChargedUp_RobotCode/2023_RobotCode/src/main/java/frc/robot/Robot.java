@@ -26,7 +26,8 @@ package frc.robot;
     import com.kauailabs.navx.frc.AHRS;                            // navX-MXP inertial mass unit, has three-axis gyro and accelerometer
     import com.revrobotics.CANSparkMax;                            // Spark MAX controller, CAN port on the roboRIO; controls motors
     import com.revrobotics.RelativeEncoder;
-    import com.revrobotics.CANSparkMax.SoftLimitDirection;
+import com.revrobotics.SparkMaxLimitSwitch;
+import com.revrobotics.CANSparkMax.SoftLimitDirection;
     import com.revrobotics.CANSparkMaxLowLevel.MotorType;          // Initializes motor types of the Spark MAX motors.
     import com.revrobotics.REVLibError;
 
@@ -59,8 +60,8 @@ public class Robot extends TimedRobot {
       private static final int motorID_RF = 2;       // Front Right Motor ID
       private static final int motorID_LR = 3;       // Rear Left Motor ID
       private static final int motorID_RR = 4;       // Rear Right Motor ID
-      private static final int motorID_arm = 7;      // Arm Motor ID
-      private static final int motorID_gripper = 9;
+      private static final int motorID_gripper = 7;      // Arm Motor ID
+      private static final int motorID_arm = 9;
     
     // Motors and Sensors - comment what each does
       private AHRS navX_gyro = new AHRS(SPI.Port.kMXP); // initialize navX gyroscope class to interface with the gyro @ port SPI-MXP
@@ -119,15 +120,10 @@ public class Robot extends TimedRobot {
        * 
        */
 
-
-      private double gyroscope_roll = navX_gyro.getRoll();
-
-      private double joystickX;
-      private double joystickY;
-      private double joystickZ; // This gets the input from twisting the stick.
-      private double joystickSlider;
-
       public RelativeEncoder arm_encoder = robot_motorArm.getEncoder();
+
+      public SparkMaxLimitSwitch arm_forwardLimit;
+      public SparkMaxLimitSwitch arm_reverseLimit;
 
   // STOP: Initialize classes4
 
@@ -154,10 +150,15 @@ public class Robot extends TimedRobot {
       robot_motorGripper.restoreFactoryDefaults();
 
       robot_motorArm.setSoftLimit(SoftLimitDirection.kForward, 1);
-      robot_motorArm.setSoftLimit(SoftLimitDirection.kReverse, -1);
-      robot_motorArm.enableSoftLimit(SoftLimitDirection.kForward, true);
-      robot_motorArm.enableSoftLimit(SoftLimitDirection.kReverse, true);
+      robot_motorArm.setSoftLimit(SoftLimitDirection.kReverse, -36);
+
+      // arm_forwardLimit = robot_motorArm.getForwardLimitSwitch(SparkMaxLimitSwitch.Type.kNormallyClosed);
+      // arm_reverseLimit = robot_motorArm.getReverseLimitSwitch(SparkMaxLimitSwitch.Type.kNormallyClosed);
+
+
     }
+
+    
 
   /**
    * This function is called every 20 ms, no matter the mode. Use this for items like diagnostics
@@ -231,11 +232,11 @@ public class Robot extends TimedRobot {
   /** This function is called periodically during operator control. */
   @Override
   public void teleopPeriodic() {
-    DrivePower = maximum_power * (Math.abs(joystickSlider - 1)) / 2;  /*  What does this do?
+    DrivePower = maximum_power * (Math.abs(robot_joystick.getRawAxis(3) - 1)) / 2;  /*  What does this do?
     *    This allows the slider to control the speed of the robot.
     *  Why do we find the absolute value of the slider minus 1 and then divide it by 2?
     *    This normalizes the slider to a range of 0 to 1, as flippig it up makes it go to the negatives. */
-   move_robot(joystickY, joystickX, DrivePower);
+   move_robot(robot_joystick.getY(), robot_joystick.getX(), DrivePower);
 
         // insert code that you want the robot to process periodically during teleop.
   }
@@ -256,13 +257,16 @@ public class Robot extends TimedRobot {
   /** This function is called once when test mode is enabled. */
   @Override
   public void testInit() {
+    arm_encoder.setPosition(0);
   }
 
   /** This function is called periodically during test mode. */
   @Override
   public void testPeriodic() {  
-    
-    robot_motorArm.set(arm_joystick.getY());
+    robot_motorArm.set(-5);
+    System.out.println(arm_encoder.getPosition());
+
+
   }
 
   /** This function is called once when the robot is first started up. */
