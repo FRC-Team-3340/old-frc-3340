@@ -91,10 +91,11 @@ public class Robot extends TimedRobot {
       // DEBUGGING TOOLS
       public NetworkTableInstance inst = NetworkTableInstance.getDefault();
       public NetworkTable stats_table = inst.getTable("datatable");
-      public DoublePublisher autobalance_cast;
+      public DoublePublisher NT_Cast;
       public DoublePublisher robot_forwardSpeed;
       public DoublePublisher robot_rotationSpeed;
       public DoublePublisher gyroRoll_output;
+      public DoublePublisher ArmEncoderOutput;
       public double autobalance_power;
 
       /* Important commands for getting user input:
@@ -169,6 +170,8 @@ public class Robot extends TimedRobot {
 
   @Override
   public void robotPeriodic() {
+  ArmEncoderOutput.set(arm_encoder.getPosition());
+  
   }
 
   /**
@@ -244,9 +247,10 @@ public class Robot extends TimedRobot {
   /** This function is called once when the robot is disabled. */
   @Override
   public void disabledInit() {
-    autobalance_cast = stats_table.getDoubleTopic("Autobalance Power").publish();
+    NT_Cast = stats_table.getDoubleTopic("Autobalance Power").publish();
     robot_forwardSpeed = stats_table.getDoubleTopic("Robot Foward Power").publish();
     robot_rotationSpeed = stats_table.getDoubleTopic("Robot Rotation Power").publish();
+    ArmEncoderOutput = stats_table.getDoubleTopic("Arm Motor Rotations").publish();
   }
 
   /** This function is called periodically when disabled. */
@@ -263,9 +267,7 @@ public class Robot extends TimedRobot {
   /** This function is called periodically during test mode. */
   @Override
   public void testPeriodic() {  
-    robot_motorArm.set(-5);
-    System.out.println(arm_encoder.getPosition());
-    robot_motorArm.set(arm_joystick.getY());
+    move_robot_arm(arm_encoder.getPosition(), arm_joystick.getY(), false);
   }
 
   /** This function is called once when the robot is first started up. */
@@ -277,6 +279,7 @@ public class Robot extends TimedRobot {
   /** This function is called periodically whilst in simulation. */
   @Override
   public void simulationPeriodic() {
+  
   }
 
   public void move_robot(double forward, double turn, double power) {
@@ -309,11 +312,18 @@ public class Robot extends TimedRobot {
       };
       
       // gyroRoll_output.set(gyroscope_roll);
-      autobalance_cast.set(autobalance_power);
+      NT_Cast.set(autobalance_power);
   }; 
 
-  public void move_robot_arm(double input, boolean override) {
-    
+  public void move_robot_arm(double encoder, double input, boolean force) {
+    if (force == true) {
+      // Goal: rotate to a specific point
+
+
+    }
+    else {
+      robot_motorArm.set(input);
+    }
   }
 
 
