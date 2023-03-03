@@ -170,7 +170,7 @@ public class Robot extends TimedRobot {
 
   @Override
   public void robotPeriodic() {
-  ArmEncoderOutput.set(arm_encoder.getPosition());
+    ArmEncoderOutput.set(arm_encoder.getPosition());
   
   }
 
