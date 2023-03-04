@@ -14,7 +14,6 @@ package frc.robot;
     import edu.wpi.first.wpilibj.drive.DifferentialDrive;
     import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
     import edu.wpi.first.wpilibj.Joystick;                         // Flight stick interface to control the robot's parts
-    import edu.wpi.first.wpilibj.event.BooleanEvent;
 
   // Network Table
     import edu.wpi.first.networktables.NetworkTable;
@@ -26,10 +25,9 @@ package frc.robot;
     import com.kauailabs.navx.frc.AHRS;                            // navX-MXP inertial mass unit, has three-axis gyro and accelerometer
     import com.revrobotics.CANSparkMax;                            // Spark MAX controller, CAN port on the roboRIO; controls motors
     import com.revrobotics.RelativeEncoder;
-import com.revrobotics.SparkMaxLimitSwitch;
-import com.revrobotics.CANSparkMax.SoftLimitDirection;
+    import com.revrobotics.SparkMaxLimitSwitch;
+    import com.revrobotics.CANSparkMax.SoftLimitDirection;
     import com.revrobotics.CANSparkMaxLowLevel.MotorType;          // Initializes motor types of the Spark MAX motors.
-    import com.revrobotics.REVLibError;
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -39,96 +37,76 @@ import com.revrobotics.CANSparkMax.SoftLimitDirection;
  */
 
 public class Robot extends TimedRobot {
-  /* 
-  What's the difference between public/private in Java?
-    > Declaring something as public or private changes the scope of the particular variable, function, or class.
-        * private -> Scope is limited to the particular class or function only.
-        * public -> Scope is global and can be accessed by other functions, classes, or scripts.
-   */
+  // Autonomous
+    private static final String kDefaultAuto = "Default";
+    private static final String kCustomAuto = "My Auto";
+    private static final String kAutobalance = "Autobalance";
+    private String m_autoSelected;
+    private final SendableChooser<String> m_chooser = new SendableChooser<>();  
 
-  // START: initialize classes:
-    // Autonomous
-      private static final String kDefaultAuto = "Default";
-      private static final String kCustomAuto = "My Auto";
-      private static final String kAutobalance = "Autobalance";
-      private String m_autoSelected;
-      private final SendableChooser<String> m_chooser = new SendableChooser<>();  
+  // CANSparkMax IDs
+    private static final int motorID_LF = 1;       // Front Left Motor ID
+    private static final int motorID_RF = 2;       // Front Right Motor ID
+    private static final int motorID_LR = 3;       // Rear Left Motor ID
+    private static final int motorID_RR = 4;       // Rear Right Motor ID
+    private static final int motorID_gripper = 7;  // Arm Motor ID
+    private static final int motorID_arm = 9;
   
-    // Fixed Numbers - please keep these to a minimum as you cannot edit these in code
-      // Motor Control - left/right motor IDs
-      private static final int motorID_LF = 1;       // Front Left Motor ID
-      private static final int motorID_RF = 2;       // Front Right Motor ID
-      private static final int motorID_LR = 3;       // Rear Left Motor ID
-      private static final int motorID_RR = 4;       // Rear Right Motor ID
-      private static final int motorID_gripper = 7;      // Arm Motor ID
-      private static final int motorID_arm = 9;
+  private MotorType motor_type = MotorType.kBrushless;    // Type of motor is brushless. Do not change.
+
+  // Motor controllers
+    private CANSparkMax motorL_front = new CANSparkMax(motorID_LF, motor_type); 
+    private CANSparkMax motorL_rear = new CANSparkMax(motorID_LR, motor_type); 
+    private CANSparkMax motorR_front = new CANSparkMax(motorID_RF, motor_type);  
+    private CANSparkMax motorR_rear = new CANSparkMax(motorID_RR, motor_type); 
+    private CANSparkMax motor_arm = new CANSparkMax(motorID_arm, motor_type);
+    private CANSparkMax motor_gripper = new CANSparkMax(motorID_gripper, motor_type); 
+
+
+  // Motor, sensor, and input config
+    private AHRS navX_gyro = new AHRS(SPI.Port.kMXP); // navX gyroscope object, SPI-MXP
+    private Joystick robot_joystick = new Joystick(0); // Create joystick interface object
+    private Joystick arm_joystick = new Joystick(1);
+    public RelativeEncoder arm_encoder = motor_arm.getEncoder();
+
+    private double MaxPower = 1; // Base maximum power
     
-    // Motors and Sensors - comment what each does
-      private AHRS navX_gyro = new AHRS(SPI.Port.kMXP); // initialize navX gyroscope class to interface with the gyro @ port SPI-MXP
+  // Create objects for both motor pairs to act as one
+    private MotorControllerGroup left_tread = new MotorControllerGroup(motorL_front, motorL_rear);
+    private MotorControllerGroup right_tread = new MotorControllerGroup(motorR_front, motorR_rear);
 
-    // Motors - initialize individual motors to later group together
-      private CANSparkMax robot_motorLF = new CANSparkMax(motorID_LF, MotorType.kBrushless);  // create object for front left motor
-      private CANSparkMax robot_motorLR = new CANSparkMax(motorID_LR, MotorType.kBrushless);  // create object for rear left motor
-      private CANSparkMax robot_motorRF = new CANSparkMax(motorID_RF, MotorType.kBrushless);  // create object for front right motor
-      private CANSparkMax robot_motorRR = new CANSparkMax(motorID_RR, MotorType.kBrushless);  // create object for rear right motor
-      private CANSparkMax robot_motorArm = new CANSparkMax(motorID_arm, MotorType.kBrushless);
-      private CANSparkMax robot_motorGripper = new CANSparkMax(motorID_gripper, MotorType.kBrushless); 
-      
-    // Connect both motors together to act as one
-      private final MotorControllerGroup trackL = new MotorControllerGroup(robot_motorLF, robot_motorLR); // create object for left track 
-      private final MotorControllerGroup trackR = new MotorControllerGroup(robot_motorRF, robot_motorRR); // create object for right track
-      // The order in which you establish a final variable does not matter. 
+  // initialize robot and control system
+    private DifferentialDrive robot = new DifferentialDrive(left_tread, right_tread); 
+ 
+  // Logging and debugging utilities
+    public NetworkTableInstance inst = NetworkTableInstance.getDefault();
+    public NetworkTable stats_table = inst.getTable("datatable");
+    public DoublePublisher ab_publisher;
+    public DoublePublisher gyroRoll_output;
+    public DoublePublisher ArmEncoderOutput;
+    public double autobalance_power;
 
-    // initialize robot and control system
-      private final DifferentialDrive robot = new DifferentialDrive(trackL, trackR); // Create robot movement object
-      private Joystick robot_joystick = new Joystick(0); // Create joystick interface object
-      private Joystick arm_joystick = new Joystick(1); 
-    
-    // Variables
-      private double maximum_power = 1; // Base maximum power
-      private double DrivePower;  // Power management for robot
-
-      // DEBUGGING TOOLS
-      public NetworkTableInstance inst = NetworkTableInstance.getDefault();
-      public NetworkTable stats_table = inst.getTable("datatable");
-      public DoublePublisher NT_Cast;
-      public DoublePublisher robot_forwardSpeed;
-      public DoublePublisher robot_rotationSpeed;
-      public DoublePublisher gyroRoll_output;
-      public DoublePublisher ArmEncoderOutput;
-      public double autobalance_power;
-
-      /* Important commands for getting user input:
-       * joystick.getX(), .getY(), .getZ()
-       * --> get input from the joystick: tilting forward/back, side to side, and twisting respectively.
-       * --> returns a double
-       * 
-       * joystick.getRawAxis(axis)
-       * --> get input from another axis on the joystick. Use axis 3 for the slider on the flight stick.
-       * --> returns a double
-       * 
-       * joystick.getRawButton(button)
-       * --> gets the state (pressed/unpressed) of a button on the joystick (1-16). 
-       * --> returns a boolean, can be converted to integer by writing this code, replacing the pseudocode:
-       *     *this_button* = *joystick*.getRawButton(*button*) 
-       * 
-       * gyro.getYaw(), .getPitch(), .getRoll()
-       * --> gets the yaw, pitch, or roll input of the gyroscope (tilt).
-       * --> returns a double
-       * 
-       * 
-       * 
-       * 
-       */
-
-      public RelativeEncoder arm_encoder = robot_motorArm.getEncoder();
+  /* Important commands for getting user input:
+    * joystick.getX(), .getY(), .getZ()
+    * --> get input from the joystick: tilting forward/back, side to side, and twisting respectively.
+    * --> returns a double
+    * 
+    * joystick.getRawAxis(axis)
+    * --> get input from another axis on the joystick. Use axis 3 for the slider on the flight stick.
+    * --> returns a double
+    * 
+    * joystick.getRawButton(button)
+    * --> gets the state (pressed/unpressed) of a button on the joystick (1-16). 
+    * --> returns a boolean, can be converted to integer by writing this code, replacing the pseudocode:
+    *     *this_button* = *joystick*.getRawButton(*button*) 
+    * 
+    * gyro.getYaw(), .getPitch(), .getRoll()
+    * --> gets the yaw, pitch, or roll input of the gyroscope (tilt).
+    * --> returns a double
+    */
 
       public SparkMaxLimitSwitch arm_forwardLimit;
       public SparkMaxLimitSwitch arm_reverseLimit;
-
-  // STOP: Initialize classes4
-
-
 
   /**   
    * This function is run when the robot is first started up and should be used for any
@@ -139,7 +117,7 @@ public class Robot extends TimedRobot {
   public void robotInit() {
     // Initialize motors and sensors to ensure no misreadings occur.
       navX_gyro.calibrate();
-      trackL.setInverted(true);
+      left_tread.setInverted(true);
 
     // Initialize robot
       m_chooser.setDefaultOption("Default Auto", kDefaultAuto);
@@ -147,16 +125,14 @@ public class Robot extends TimedRobot {
       SmartDashboard.putData("Auto choices", m_chooser);
 
     // Initialize robot arm and gripper
-      robot_motorArm.restoreFactoryDefaults();
-      robot_motorGripper.restoreFactoryDefaults();
+      motor_arm.restoreFactoryDefaults();
+      motor_gripper.restoreFactoryDefaults();
 
-      robot_motorArm.setSoftLimit(SoftLimitDirection.kForward, 1);
-      robot_motorArm.setSoftLimit(SoftLimitDirection.kReverse, -36);
+      motor_arm.setSoftLimit(SoftLimitDirection.kForward, 1);
+      motor_arm.setSoftLimit(SoftLimitDirection.kReverse, -36);
 
       // arm_forwardLimit = robot_motorArm.getForwardLimitSwitch(SparkMaxLimitSwitch.Type.kNormallyClosed);
       // arm_reverseLimit = robot_motorArm.getReverseLimitSwitch(SparkMaxLimitSwitch.Type.kNormallyClosed);
-
-
     }
 
     
@@ -207,7 +183,7 @@ public class Robot extends TimedRobot {
           double autobalance_axis = navX_gyro.getRoll();
 
           autobalance_robot(autobalance_axis);
-          move_robot(autobalance_power, 0, 1);
+          move_robot(autobalance_power, 0, 1, false);
 
           if (autobalance_power == 0) {
             time_balanced++;
@@ -235,21 +211,13 @@ public class Robot extends TimedRobot {
   /** This function is called periodically during operator control. */
   @Override
   public void teleopPeriodic() {
-    DrivePower = maximum_power * (Math.abs(robot_joystick.getRawAxis(3) - 1)) / 2;  /*  What does this do?
-    *    This allows the slider to control the speed of the robot.
-    *  Why do we find the absolute value of the slider minus 1 and then divide it by 2?
-    *    This normalizes the slider to a range of 0 to 1, as flippig it up makes it go to the negatives. */
-   move_robot(robot_joystick.getY(), robot_joystick.getX(), DrivePower);
-
-        // insert code that you want the robot to process periodically during teleop.
+   move_robot(robot_joystick.getY(), robot_joystick.getX(), robot_joystick.getRawAxis(3), true);
   }
 
   /** This function is called once when the robot is disabled. */
   @Override
   public void disabledInit() {
-    NT_Cast = stats_table.getDoubleTopic("Autobalance Power").publish();
-    robot_forwardSpeed = stats_table.getDoubleTopic("Robot Foward Power").publish();
-    robot_rotationSpeed = stats_table.getDoubleTopic("Robot Rotation Power").publish();
+    ab_publisher = stats_table.getDoubleTopic("Autobalance Power").publish();
     ArmEncoderOutput = stats_table.getDoubleTopic("Arm Motor Rotations").publish();
   }
 
@@ -267,6 +235,7 @@ public class Robot extends TimedRobot {
   /** This function is called periodically during test mode. */
   @Override
   public void testPeriodic() {  
+    move_robot(robot_joystick.getY(), robot_joystick.getX(), robot_joystick.getRawAxis(3), true);
     move_robot_arm(arm_encoder.getPosition(), arm_joystick.getY(), false);
   }
 
@@ -282,37 +251,37 @@ public class Robot extends TimedRobot {
   
   }
 
-  public void move_robot(double forward, double turn, double power) {
-    robot.arcadeDrive(forward*power, turn*power);   // Wilbert, Ryan
-    robot_forwardSpeed.set(forward*power);
-    robot_rotationSpeed.set(turn*power);
+  public void move_robot(double forward, double turn, double speed, boolean isUserInput) {
+    if (isUserInput == true) {
+      speed = MaxPower * (Math.abs(speed - 1)) / 2;   
+    }
+    robot.arcadeDrive(forward*speed, turn*speed);   // Wilbert, Ryan
   }
 
-  public void autobalance_robot(double input_source) {
-    float max_incline = 15;
-    double autobalance_threshold = 2.5;
-    double tiltAxis = input_source;
+  public void autobalance_robot(double source) {
+    float maxAngle = 15;
+    double minAngle = 2.5;
+    double abAxis = source;
  
     double max_additive_power = 0.2;
 
-    if (tiltAxis > max_incline) {
-        autobalance_power = - max_additive_power;
+    if (abAxis > maxAngle)  {
+        autobalance_power = -max_additive_power;
+    } else if (abAxis < -maxAngle) {
+      autobalance_power = max_additive_power;
 
-      } else if (tiltAxis < -max_incline) {
-            autobalance_power = max_additive_power;
-
-      } else if (tiltAxis > autobalance_threshold) {
-          autobalance_power = -(max_additive_power * ((tiltAxis - autobalance_threshold)/(max_incline - autobalance_threshold)));
-        
-      } else if (tiltAxis < -autobalance_threshold) {
-        autobalance_power = (max_additive_power * ((tiltAxis + autobalance_threshold)/(-max_incline + autobalance_threshold))); 
-    
-      } else {
-        autobalance_power = 0;
-      };
+    } else if (abAxis > minAngle) {
+        autobalance_power = -(max_additive_power * ((abAxis - minAngle)/(maxAngle - minAngle)));
+      
+    } else if (abAxis < -minAngle) {
+      autobalance_power = (max_additive_power * ((abAxis + minAngle)/(-maxAngle + minAngle))); 
+  
+    } else {
+      autobalance_power = 0;
+    };
       
       // gyroRoll_output.set(gyroscope_roll);
-      NT_Cast.set(autobalance_power);
+      ab_publisher.set(autobalance_power);
   }; 
 
   public void move_robot_arm(double encoder, double input, boolean force) {
@@ -322,7 +291,7 @@ public class Robot extends TimedRobot {
 
     }
     else {
-      robot_motorArm.set(input);
+      motor_arm.set(input);
     }
   }
 
