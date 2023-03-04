@@ -105,8 +105,8 @@ public class Robot extends TimedRobot {
     * --> returns a double
     */
 
-      public SparkMaxLimitSwitch arm_forwardLimit;
-      public SparkMaxLimitSwitch arm_reverseLimit;
+    public SparkMaxLimitSwitch armLS_forward;
+    public SparkMaxLimitSwitch armLS_reverse;
 
   /**   
    * This function is run when the robot is first started up and should be used for any
@@ -128,11 +128,9 @@ public class Robot extends TimedRobot {
       motor_arm.restoreFactoryDefaults();
       motor_gripper.restoreFactoryDefaults();
 
-      motor_arm.setSoftLimit(SoftLimitDirection.kForward, 1);
-      motor_arm.setSoftLimit(SoftLimitDirection.kReverse, -36);
+      armLS_forward = motor_arm.getForwardLimitSwitch(SparkMaxLimitSwitch.Type.kNormallyOpen);
+      armLS_reverse = motor_arm.getReverseLimitSwitch(SparkMaxLimitSwitch.Type.kNormallyOpen);
 
-      // arm_forwardLimit = robot_motorArm.getForwardLimitSwitch(SparkMaxLimitSwitch.Type.kNormallyClosed);
-      // arm_reverseLimit = robot_motorArm.getReverseLimitSwitch(SparkMaxLimitSwitch.Type.kNormallyClosed);
     }
 
     
@@ -236,7 +234,16 @@ public class Robot extends TimedRobot {
   @Override
   public void testPeriodic() {  
     move_robot(robot_joystick.getY(), robot_joystick.getX(), robot_joystick.getRawAxis(3), true);
-    move_robot_arm(arm_encoder.getPosition(), arm_joystick.getY(), false);
+    
+    if (Math.abs(arm_joystick.getY()) > 0.1) {
+    move_robot_arm(arm_encoder.getPosition(), arm_joystick.getY(), false, 0);
+    } else if (arm_joystick.getRawButton(8) == true) {
+      move_robot_arm(arm_encoder.getPosition(), 0, true, -5); 
+    } else if (arm_joystick.getRawButton(10) == true) {
+      move_robot_arm(arm_encoder.getPosition(), 0, true, -20);  
+    } else if (arm_joystick.getRawButton(12) == true) {
+      move_robot_arm(arm_encoder.getPosition(), 0, true, -30); 
+    }
   }
 
   /** This function is called once when the robot is first started up. */
@@ -284,17 +291,30 @@ public class Robot extends TimedRobot {
       ab_publisher.set(autobalance_power);
   }; 
 
-  public void move_robot_arm(double encoder, double input, boolean force) {
-    if (force == true) {
-      // Goal: rotate to a specific point
-
-
-    }
-    else {
+  public void move_robot_arm(double rotations, double input, boolean isPreset, double rotate_to) {
+    if (isPreset == true) {
+      while (rotations != rotate_to) {
+        if (rotations > rotate_to) {
+          motor_arm.set(0.1);
+        } else if (rotations < rotate_to) {
+          motor_arm.set(-0.1);
+        } else {
+          motor_arm.set(0);
+          break;
+        }
+      }
+    } else {
+      if (rotations > -36) {
+        armLS_reverse.enableLimitSwitch(true);
+      } else if (rotations == 0) {
+        armLS_forward.enableLimitSwitch(true);
+      } else {
+        armLS_forward.enableLimitSwitch(false);
+        armLS_reverse.enableLimitSwitch(false);
+      }
       motor_arm.set(input);
     }
   }
-
 
   /*
     function move_robot_arm(movement_input, overwrite) {
