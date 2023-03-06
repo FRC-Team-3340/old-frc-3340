@@ -266,9 +266,6 @@ public class Robot extends TimedRobot {
     } else {
       move_robot_arm(false, 0, 0);
     }
-    else {
-      move_robot_arm(arm_encoder.getPosition(), 0, false, 0);
-    }
   }
 
   /** This function is called once when the robot is first started up. */
