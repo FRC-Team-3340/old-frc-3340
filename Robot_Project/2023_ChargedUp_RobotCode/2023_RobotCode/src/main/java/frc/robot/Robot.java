@@ -297,11 +297,11 @@ public class Robot extends TimedRobot {
   public void move_robot_arm(double rotations, double input, boolean isPreset, double rotate_to) {
     System.out.println(rotations);  
     if (isPreset == true) {
-      while (Math.abs(arm_encoder.getPosition()) != Math.abs(arm_encoder.getPosition() - rotate_to)) {
+      while (Math.abs(arm_encoder.getPosition()) - Math.abs(rotate_to) > 5) {
         if (arm_encoder.getPosition() > rotate_to) {
-          motor_arm.set(-.1);
+          motor_arm.set(-1);
         } else if (arm_encoder.getPosition() < rotate_to) {
-          motor_arm.set(.1);
+          motor_arm.set(1);
         } else {
           motor_arm.set(0);
           break;
@@ -309,9 +309,9 @@ public class Robot extends TimedRobot {
         System.out.println(arm_encoder.getPosition());
       };
     } else {
-      if (rotations < -36) {
+      if (arm_encoder.getPosition() < -36) {
         armLS_reverse.enableLimitSwitch(true);
-      } else if (rotations > 0) {
+      } else if (arm_encoder.getPosition() > 0) {
         armLS_forward.enableLimitSwitch(true);
       } else {
         armLS_forward.enableLimitSwitch(false);
