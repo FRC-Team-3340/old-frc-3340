@@ -73,7 +73,7 @@ public class Robot extends TimedRobot {
   private Joystick arm_joystick = new Joystick(1);
   public RelativeEncoder arm_encoder = motor_arm.getEncoder();
 
-  private double MaxPower = 1; // Base maximum power
+  private double MaxPower = .5; // Base maximum power
 
   // Create objects for both motor pairs to act as one
   private MotorControllerGroup left_tread = new MotorControllerGroup(motorL_front, motorL_rear);
@@ -83,7 +83,6 @@ public class Robot extends TimedRobot {
   private DifferentialDrive robot = new DifferentialDrive(left_tread, right_tread);
   private PIDController rotate_to = new PIDController(10, 0, 0);
 
-
   // Logging and debugging utilities
   public NetworkTableInstance inst = NetworkTableInstance.getDefault();
   public NetworkTable stats_table = inst.getTable("datatable");
@@ -92,7 +91,6 @@ public class Robot extends TimedRobot {
   public DoublePublisher ArmEncoderOutput;
   public double autobalance_power;
   public int lastPressed = 0;
-
 
   /*
    * Important commands for getting user input:
@@ -268,6 +266,9 @@ public class Robot extends TimedRobot {
     } else {
       move_robot_arm(false, 0, 0);
     }
+    else {
+      move_robot_arm(arm_encoder.getPosition(), 0, false, 0);
+    }
   }
 
   /** This function is called once when the robot is first started up. */
@@ -317,8 +318,6 @@ public class Robot extends TimedRobot {
     ab_publisher.set(autobalance_power);
   };
 
-
-
   public void move_robot_arm(boolean isPreset, double input, double target) {
 
     if (isPreset == false) {
@@ -329,50 +328,54 @@ public class Robot extends TimedRobot {
       } else {
         motor_arm.set(0);
       }
-    } else if (isPreset == true) { 
+    } else if (isPreset == true) {
       motor_arm.setIdleMode(IdleMode.kCoast);
       System.out.println(rotate_to.calculate(arm_encoder.getPosition(), target));
-      //System.out.println(arm_encoder.getPosition(), targ);
+      // System.out.println(arm_encoder.getPosition(), targ);
       while (Math.abs(arm_encoder.getPosition() - target) > 0.5) {
         System.out.println(Math.abs(arm_encoder.getPosition() - target));
         motor_arm.set(rotate_to.calculate(arm_encoder.getPosition(), target));
       }
       motor_arm.setIdleMode(IdleMode.kBrake);
       // try {
-      //   Thread.sleep(1000);
+      // Thread.sleep(1000);
       // } catch (InterruptedException e) {
-      //   // TODO Auto-generated catch block
-      //   e.printStackTrace();
+      // // TODO Auto-generated catch block
+      // e.printStackTrace();
       // }
     }
-  
+
   }
-/* 
-  public void move_robot_arm(double rotations, double input, boolean isPreset, double rotate_to) {
-    if (isPreset == true) {
-      while (rotations != rotate_to) {
-        if (rotations > rotate_to) {
-          motor_arm.set(0.1);
-        } else if (rotations < rotate_to) {
-          motor_arm.set(-0.1);
-        } else {
-          motor_arm.set(0);
-          break;
-        }
-      }
-    } else {
-      if (rotations > -36) {
-        armLS_reverse.enableLimitSwitch(true);
-      } else if (rotations == 0) {
-        armLS_forward.enableLimitSwitch(true);
-      } else {
-        armLS_forward.enableLimitSwitch(false);
-        armLS_reverse.enableLimitSwitch(false);
-      }
-      motor_arm.set(input);
-    }
-  }
-  */
+  /*
+   * public void move_robot_arm(double rotations, double input, boolean isPreset,
+   * double rotate_to) {
+   * System.out.println(rotations);
+   * if (isPreset == true) {
+   * while (Math.abs(arm_encoder.getPosition()) !=
+   * Math.abs(arm_encoder.getPosition() - rotate_to)) {
+   * if (arm_encoder.getPosition() > rotate_to) {
+   * motor_arm.set(-.1);
+   * } else if (arm_encoder.getPosition() < rotate_to) {
+   * motor_arm.set(.1);
+   * } else {
+   * motor_arm.set(0);
+   * break;
+   * }
+   * System.out.println(arm_encoder.getPosition());
+   * };
+   * } else {
+   * if (rotations < -36) {
+   * armLS_reverse.enableLimitSwitch(true);
+   * } else if (rotations > 0) {
+   * armLS_forward.enableLimitSwitch(true);
+   * } else {
+   * armLS_forward.enableLimitSwitch(false);
+   * armLS_reverse.enableLimitSwitch(false);
+   * }
+   * motor_arm.set(input);
+   * }
+   * }
+   */
 
   /*
    * function move_robot_arm(movement_input, overwrite) {
