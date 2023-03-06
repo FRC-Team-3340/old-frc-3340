@@ -3,9 +3,6 @@
     "Retained Values": {
       "open": false
     },
-    "Transitory Values": {
-      "open": false
-    },
     "transitory": {
       "FMSInfo": {
         "open": true
