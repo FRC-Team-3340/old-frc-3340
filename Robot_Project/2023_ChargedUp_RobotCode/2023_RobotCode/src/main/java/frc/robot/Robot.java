@@ -71,6 +71,7 @@ public class Robot extends TimedRobot {
   private AHRS navX_gyro = new AHRS(SPI.Port.kMXP); // navX gyroscope object, SPI-MXP
   private Joystick robot_joystick = new Joystick(0); // Create joystick interface object
   private Joystick arm_joystick = new Joystick(1);
+  private Joystick emulated_gyroscope = new Joystick(2);
   public RelativeEncoder arm_encoder = motor_arm.getEncoder();
 
   private double MaxPower = .5; // Base maximum power
@@ -195,25 +196,18 @@ public class Robot extends TimedRobot {
       case kAutobalance:
         boolean balanced = false;
         float time_balanced = 0;
-
         while (balanced == false) {
-          double autobalance_axis = navX_gyro.getRoll();
-
-          autobalance_robot(autobalance_axis);
+          autobalance_power = autobalance_robot(navX_gyro.getRoll());
           move_robot(autobalance_power, 0, 1, false);
-
           if (autobalance_power == 0) {
             time_balanced++;
-          }
+          } 
           if (time_balanced == 10000) {
             System.out.println("Robot is balanced :)");
             balanced = true;
-          }
-        }
-        if (balanced == true) {
-          break;
-        }
-
+            break;
+          };
+        };
       case kDefaultAuto:
       default:
 
@@ -248,6 +242,7 @@ public class Robot extends TimedRobot {
   @Override
   public void testInit() {
     arm_encoder.setPosition(0);
+    Joystick emulated_gyroscope = new Joystick(2);
   }
 
   /** This function is called periodically during test mode. */
@@ -266,6 +261,15 @@ public class Robot extends TimedRobot {
     } else {
       move_robot_arm(false, 0, 0);
     }
+
+    if (Math.abs(emulated_gyroscope.getY()) < .1){
+      autobalance_robot(navX_gyro.getRoll());
+    } else {
+      autobalance_robot(emulated_gyroscope.getY());
+    }
+
+
+
   }
 
   /** This function is called once when the robot is first started up. */
@@ -281,38 +285,34 @@ public class Robot extends TimedRobot {
 
   }
 
-  public void move_robot(double forward, double turn, double speed, boolean isUserInput) {
-    if (isUserInput == true) {
+  public void move_robot(double forward, double turn, double speed, boolean speed_isSliderInput) {
+    if (speed_isSliderInput == true) {
       speed = MaxPower * (Math.abs(speed - 1)) / 2;
     }
     robot.arcadeDrive(forward * speed, turn * speed); // Wilbert, Ryan
   }
 
-  public void autobalance_robot(double source) {
-    float maxAngle = 15;
+  public double autobalance_robot(double source) {
+    double maxAngle = 15.0;
     double minAngle = 2.5;
-    double abAxis = source;
+    double autobalanceAxis = source;
+    double maximum_power = 0.2;
+    double output_power = 0;
 
-    double max_additive_power = 0.2;
-
-    if (abAxis > maxAngle) {
-      autobalance_power = -max_additive_power;
-    } else if (abAxis < -maxAngle) {
-      autobalance_power = max_additive_power;
-
-    } else if (abAxis > minAngle) {
-      autobalance_power = -(max_additive_power * ((abAxis - minAngle) / (maxAngle - minAngle)));
-
-    } else if (abAxis < -minAngle) {
-      autobalance_power = (max_additive_power * ((abAxis + minAngle) / (-maxAngle + minAngle)));
-
+    if (autobalanceAxis > maxAngle) {
+      output_power = -maximum_power;
+    } else if (autobalanceAxis < -maxAngle) {
+      output_power = maximum_power;
+    } else if (autobalanceAxis > minAngle) {
+      output_power = -(maximum_power * ((autobalanceAxis - minAngle) / (maxAngle - minAngle)));
+    } else if (autobalanceAxis < -minAngle) {
+      output_power = (maximum_power * ((autobalanceAxis + minAngle) / (-maxAngle + minAngle)));
     } else {
-      autobalance_power = 0;
-    }
-    ;
+      output_power = 0;
+    };
 
-    // gyroRoll_output.set(gyroscope_roll);
-    ab_publisher.set(autobalance_power);
+    ab_publisher.set(autobalance_power); // display this in network tables for debugging
+    return output_power;
   };
 
   public void move_robot_arm(boolean isPreset, double input, double target) {
@@ -324,7 +324,7 @@ public class Robot extends TimedRobot {
         motor_arm.set(-0.1);
       } else {
         motor_arm.set(0);
-      }
+      };
     } else if (isPreset == true) {
       motor_arm.setIdleMode(IdleMode.kCoast);
       System.out.println(rotate_to.calculate(arm_encoder.getPosition(), target));
@@ -332,60 +332,8 @@ public class Robot extends TimedRobot {
       while (Math.abs(arm_encoder.getPosition() - target) > 0.5) {
         System.out.println(Math.abs(arm_encoder.getPosition() - target));
         motor_arm.set(rotate_to.calculate(arm_encoder.getPosition(), target));
-      }
+      };
       motor_arm.setIdleMode(IdleMode.kBrake);
-      // try {
-      // Thread.sleep(1000);
-      // } catch (InterruptedException e) {
-      // // TODO Auto-generated catch block
-      // e.printStackTrace();
-      // }
-    }
-
-  }
-  /*
-   * public void move_robot_arm(double rotations, double input, boolean isPreset,
-   * double rotate_to) {
-   * System.out.println(rotations);
-   * if (isPreset == true) {
-   * while (Math.abs(arm_encoder.getPosition()) !=
-   * Math.abs(arm_encoder.getPosition() - rotate_to)) {
-   * if (arm_encoder.getPosition() > rotate_to) {
-   * motor_arm.set(-.1);
-   * } else if (arm_encoder.getPosition() < rotate_to) {
-   * motor_arm.set(.1);
-   * } else {
-   * motor_arm.set(0);
-   * break;
-   * }
-   * System.out.println(arm_encoder.getPosition());
-   * };
-   * } else {
-   * if (rotations < -36) {
-   * armLS_reverse.enableLimitSwitch(true);
-   * } else if (rotations > 0) {
-   * armLS_forward.enableLimitSwitch(true);
-   * } else {
-   * armLS_forward.enableLimitSwitch(false);
-   * armLS_reverse.enableLimitSwitch(false);
-   * }
-   * motor_arm.set(input);
-   * }
-   * }
-   */
-
-  /*
-   * function move_robot_arm(movement_input, overwrite) {
-   * get current rotation of arm motor
-   * if motor is not exceeding 10% or 90% rotation {
-   * if (overwrite === true) {
-   * set rotation to movement_input, usually given by a preset button.
-   * buttons 8, 10, and 12 will trigger this event
-   * } else {
-   * add rotation to movement_input, as controlled by the D-Pad
-   * }
-   * }
-   * do this for negative and positive if using the D-Pad.
-   * }
-   */
-}
+    };
+  };
+};
