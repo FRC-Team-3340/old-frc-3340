@@ -242,7 +242,6 @@ public class Robot extends TimedRobot {
   @Override
   public void testInit() {
     arm_encoder.setPosition(0);
-    Joystick emulated_gyroscope = new Joystick(2);
   }
 
   /** This function is called periodically during test mode. */
