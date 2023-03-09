@@ -19,7 +19,6 @@ import edu.wpi.first.math.controller.PIDController;
 // Network Table
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.networktables.DoublePublisher;
 
 // Imports for sensors, motors, and inputs - comment what each import is for
