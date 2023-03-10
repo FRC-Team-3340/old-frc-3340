@@ -321,7 +321,7 @@ public class Robot extends TimedRobot {
       } else if (input < -0.01) {
         motor_arm.set(-0.1);
       } else {
-        motor_arm.set(0);
+        motor_arm.set(-0.01);
       };
     } else if (isPreset == true) {
       motor_arm.setIdleMode(IdleMode.kCoast);
@@ -332,6 +332,7 @@ public class Robot extends TimedRobot {
         motor_arm.set(rotate_to.calculate(arm_encoder.getPosition(), target));
       };
       motor_arm.setIdleMode(IdleMode.kBrake);
+      motor_arm.set(-0.01);
     };
   };
 };
