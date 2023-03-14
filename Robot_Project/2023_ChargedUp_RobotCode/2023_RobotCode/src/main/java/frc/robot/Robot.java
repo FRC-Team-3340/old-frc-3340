@@ -72,6 +72,7 @@ public class Robot extends TimedRobot {
   private Joystick arm_joystick = new Joystick(1);
   private Joystick emulated_gyroscope = new Joystick(2);
   public RelativeEncoder arm_encoder = motor_arm.getEncoder();
+  public RelativeEncoder gripper_encoder = motor_gripper.getEncoder();
 
   private double MaxPower = .5; // Base maximum power
 
@@ -91,6 +92,7 @@ public class Robot extends TimedRobot {
   public DoublePublisher ArmEncoderOutput;
   public double autobalance_power;
   public int lastPressed = 0;
+
 
   /*
    * Important commands for getting user input:
@@ -115,9 +117,6 @@ public class Robot extends TimedRobot {
    * --> returns a double
    */
 
-  public SparkMaxLimitSwitch armLS_forward;
-  public SparkMaxLimitSwitch armLS_reverse;
-
   /**
    * This function is run when the robot is first started up and should be used
    * for any
@@ -141,9 +140,11 @@ public class Robot extends TimedRobot {
     motor_arm.setSoftLimit(SoftLimitDirection.kForward, 1);
     motor_arm.setSoftLimit(SoftLimitDirection.kReverse, -36);
 
-    armLS_forward = motor_arm.getForwardLimitSwitch(SparkMaxLimitSwitch.Type.kNormallyOpen);
-    armLS_reverse = motor_arm.getReverseLimitSwitch(SparkMaxLimitSwitch.Type.kNormallyOpen);
+    motor_arm.enableSoftLimit(SoftLimitDirection.kForward, isEnabled());
+    motor_arm.enableSoftLimit(SoftLimitDirection.kForward, isEnabled());
 
+    // motor_gripper.setSoftLimit(SoftLimitDirection.kForward, -1);
+    motor_gripper.enableSoftLimit(SoftLimitDirection.kForward, isEnabled());
   }
 
   /**
@@ -157,7 +158,6 @@ public class Robot extends TimedRobot {
   @Override
   public void robotPeriodic() {
     ArmEncoderOutput.set(arm_encoder.getPosition());
-
   }
 
   /**
@@ -241,9 +241,10 @@ public class Robot extends TimedRobot {
   @Override
   public void testInit() {
     arm_encoder.setPosition(0);
+    gripper_encoder.setPosition(0);
   }
 
-  /** This function is called periodically during test mode. */
+  /* This function is called periodically during test mode. */
   @Override
   public void testPeriodic() {
     move_robot(robot_joystick.getY(), robot_joystick.getX(), robot_joystick.getRawAxis(3), true);
@@ -266,7 +267,7 @@ public class Robot extends TimedRobot {
       autobalance_robot(emulated_gyroscope.getY());
     }
 
-
+    toggle_gripper(arm_joystick.getRawButton(1), gripper_encoder.getPosition());
 
   }
 
@@ -335,4 +336,13 @@ public class Robot extends TimedRobot {
       motor_arm.set(-0.01);
     };
   };
+
+  public void toggle_gripper(boolean toggle, double rotations) {
+    double motor_default_speed = 0.25;
+    if (toggle == false) {
+      motor_gripper.set(0);
+    } else if (toggle == true) {
+      motor_gripper.set(-motor_default_speed);
+    }
+  }
 };
