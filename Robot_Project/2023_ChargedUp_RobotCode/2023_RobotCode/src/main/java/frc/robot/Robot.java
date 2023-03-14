@@ -72,6 +72,7 @@ public class Robot extends TimedRobot {
   private Joystick arm_joystick = new Joystick(1);
   private Joystick emulated_gyroscope = new Joystick(2);
   public RelativeEncoder arm_encoder = motor_arm.getEncoder();
+  public RelativeEncoder gripper_encoder = motor_gripper.getEncoder();
 
   private double MaxPower = .5; // Base maximum power
 
@@ -144,7 +145,7 @@ public class Robot extends TimedRobot {
     motor_arm.enableSoftLimit(SoftLimitDirection.kForward, isEnabled());
 
     motor_gripper.setSoftLimit(SoftLimitDirection.kReverse, -1);
-    motor_gripper.enableSoftLimit(SoftLimitDirection.kReverse, isEnabled());
+    motor_gripper.enableSoftLimit(SoftLimitDirection.kReverse, true);
   }
 
   /**
