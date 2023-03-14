@@ -72,7 +72,6 @@ public class Robot extends TimedRobot {
   private Joystick arm_joystick = new Joystick(1);
   private Joystick emulated_gyroscope = new Joystick(2);
   public RelativeEncoder arm_encoder = motor_arm.getEncoder();
-  public RelativeEncoder gripper_encoder = motor_gripper.getEncoder();
 
   private double MaxPower = .5; // Base maximum power
 
@@ -83,6 +82,7 @@ public class Robot extends TimedRobot {
   // initialize robot and control system
   private DifferentialDrive robot = new DifferentialDrive(left_tread, right_tread);
   private PIDController rotate_to = new PIDController(10, 0, 0);
+  private boolean clamp_object;
 
   // Logging and debugging utilities
   public NetworkTableInstance inst = NetworkTableInstance.getDefault();
@@ -143,8 +143,8 @@ public class Robot extends TimedRobot {
     motor_arm.enableSoftLimit(SoftLimitDirection.kForward, isEnabled());
     motor_arm.enableSoftLimit(SoftLimitDirection.kForward, isEnabled());
 
-    // motor_gripper.setSoftLimit(SoftLimitDirection.kForward, -1);
-    motor_gripper.enableSoftLimit(SoftLimitDirection.kForward, isEnabled());
+    motor_gripper.setSoftLimit(SoftLimitDirection.kReverse, -1);
+    motor_gripper.enableSoftLimit(SoftLimitDirection.kReverse, isEnabled());
   }
 
   /**
@@ -240,8 +240,8 @@ public class Robot extends TimedRobot {
   /** This function is called once when test mode is enabled. */
   @Override
   public void testInit() {
+    clamp_object = false;
     arm_encoder.setPosition(0);
-    gripper_encoder.setPosition(0);
   }
 
   /* This function is called periodically during test mode. */
@@ -261,13 +261,19 @@ public class Robot extends TimedRobot {
       move_robot_arm(false, 0, 0);
     }
 
+    if (arm_joystick.getRawButton(1) == true) {
+      clamp_object = true;
+    } else if (arm_joystick.getRawButton(2) == true) {
+      clamp_object = false;
+    }
+
     if (Math.abs(emulated_gyroscope.getY()) < .1){
       autobalance_robot(navX_gyro.getRoll());
     } else {
       autobalance_robot(emulated_gyroscope.getY());
     }
-
-    toggle_gripper(arm_joystick.getRawButton(1), gripper_encoder.getPosition());
+    
+    toggle_gripper(clamp_object);
 
   }
 
@@ -337,10 +343,11 @@ public class Robot extends TimedRobot {
     };
   };
 
-  public void toggle_gripper(boolean toggle, double rotations) {
-    double motor_default_speed = 0.25;
+  public void toggle_gripper(boolean toggle) {
+    double motor_default_speed = 0.1;
+
     if (toggle == false) {
-      motor_gripper.set(0);
+      motor_gripper.set(motor_default_speed);
     } else if (toggle == true) {
       motor_gripper.set(-motor_default_speed);
     }
