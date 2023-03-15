@@ -91,6 +91,7 @@ public class Robot extends TimedRobot {
   public DoublePublisher ab_publisher;
   public DoublePublisher gyroRoll_output;
   public DoublePublisher ArmEncoderOutput;
+  public DoublePublisher GripperOutput;
   public double autobalance_power;
   public int lastPressed = 0;
 
@@ -143,9 +144,14 @@ public class Robot extends TimedRobot {
 
     motor_arm.enableSoftLimit(SoftLimitDirection.kForward, isEnabled());
     motor_arm.enableSoftLimit(SoftLimitDirection.kForward, isEnabled());
+    
+    motor_gripper.set(0);
 
-    motor_gripper.setSoftLimit(SoftLimitDirection.kReverse, -1);
+    gripper_encoder.setPosition(0);
+    motor_gripper.setIdleMode(IdleMode.kBrake);
+    motor_gripper.setSoftLimit(SoftLimitDirection.kReverse, 0);
     motor_gripper.enableSoftLimit(SoftLimitDirection.kReverse, true);
+
   }
 
   /**
@@ -159,6 +165,7 @@ public class Robot extends TimedRobot {
   @Override
   public void robotPeriodic() {
     ArmEncoderOutput.set(arm_encoder.getPosition());
+    GripperOutput.set(gripper_encoder.getPosition());
   }
 
   /**
@@ -231,6 +238,7 @@ public class Robot extends TimedRobot {
   public void disabledInit() {
     ab_publisher = stats_table.getDoubleTopic("Autobalance Power").publish();
     ArmEncoderOutput = stats_table.getDoubleTopic("Arm Motor Rotations").publish();
+    GripperOutput = stats_table.getDoubleTopic("Gripper Encoder").publish();  
   }
 
   /** This function is called periodically when disabled. */
@@ -250,23 +258,17 @@ public class Robot extends TimedRobot {
   public void testPeriodic() {
     move_robot(robot_joystick.getY(), robot_joystick.getX(), robot_joystick.getRawAxis(3), true);
 
-    if (Math.abs(arm_joystick.getY()) > 0.1) {
-      move_robot_arm(false, arm_joystick.getY(), 0);
-    } else if (arm_joystick.getRawButton(8) == true) {
-      move_robot_arm(true, 0, -5);
-    } else if (arm_joystick.getRawButton(10) == true) {
-      move_robot_arm(true, 0, -20);
-    } else if (arm_joystick.getRawButton(12) == true) {
-      move_robot_arm(true, 0, -30);
-    } else {
-      move_robot_arm(false, 0, 0);
-    }
-
-    if (arm_joystick.getRawButton(1) == true) {
-      clamp_object = true;
-    } else if (arm_joystick.getRawButton(2) == true) {
-      clamp_object = false;
-    }
+    // if (Math.abs(arm_joystick.getY()) > 0.1) {
+    //   move_robot_arm(false, arm_joystick.getY(), 0);
+    // } else if (arm_joystick.getRawButton(8) == true) {
+    //   move_robot_arm(true, 0, -5);
+    // } else if (arm_joystick.getRawButton(10) == true) {
+    //   move_robot_arm(true, 0, -20);
+    // } else if (arm_joystick.getRawButton(12) == true) {
+    //   move_robot_arm(true, 0, -30);
+    // } else {
+    //   move_robot_arm(false, 0, 0);
+    // }
 
     if (Math.abs(emulated_gyroscope.getY()) < .1){
       autobalance_robot(navX_gyro.getRoll());
@@ -274,7 +276,7 @@ public class Robot extends TimedRobot {
       autobalance_robot(emulated_gyroscope.getY());
     }
     
-    toggle_gripper(clamp_object);
+    toggle_gripper(arm_joystick.getRawButton(1));
 
   }
 
@@ -324,12 +326,12 @@ public class Robot extends TimedRobot {
   public void move_robot_arm(boolean isPreset, double input, double target) {
 
     if (isPreset == false) {
-      if (input > 0.01) {
-        motor_arm.set(0.1);
-      } else if (input < -0.01) {
+      if (input > 0.1) {
+        motor_arm.set(0.025);
+      } else if (input < -0.1) {
         motor_arm.set(-0.1);
       } else {
-        motor_arm.set(-0.01);
+        motor_arm.set(-0.05);
       };
     } else if (isPreset == true) {
       motor_arm.setIdleMode(IdleMode.kCoast);
@@ -340,16 +342,16 @@ public class Robot extends TimedRobot {
         motor_arm.set(rotate_to.calculate(arm_encoder.getPosition(), target));
       };
       motor_arm.setIdleMode(IdleMode.kBrake);
-      motor_arm.set(-0.01);
+      motor_arm.set(0);
     };
   };
 
   public void toggle_gripper(boolean toggle) {
-    double motor_default_speed = 0.1;
+    double motor_default_speed = 0.075  ;
 
-    if (toggle == false) {
+    if (toggle == true) {
       motor_gripper.set(motor_default_speed);
-    } else if (toggle == true) {
+    } else if (toggle == false) {
       motor_gripper.set(-motor_default_speed);
     }
   }
