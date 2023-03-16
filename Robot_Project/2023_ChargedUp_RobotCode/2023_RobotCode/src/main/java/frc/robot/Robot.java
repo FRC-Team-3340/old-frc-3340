@@ -27,7 +27,6 @@ import edu.wpi.first.networktables.DoublePublisher;
 import com.kauailabs.navx.frc.AHRS; // navX-MXP inertial mass unit, has three-axis gyro and accelerometer
 import com.revrobotics.CANSparkMax; // Spark MAX controller, CAN port on the roboRIO; controls motors
 import com.revrobotics.RelativeEncoder;
-import com.revrobotics.SparkMaxLimitSwitch;
 import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMax.SoftLimitDirection;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType; // Initializes motor types of the Spark MAX motors.
@@ -101,8 +100,6 @@ public class Robot extends TimedRobot {
   public double autobalance_power;
   public int lastPressed = 0;
 
-
-  // Limit Switches
   /*
    * Important commands for getting user input:
    * joystick.getX(), .getY(), .getZ()
@@ -150,8 +147,7 @@ public class Robot extends TimedRobot {
     motor_gripper.set(0);
     gripper_encoder.setPosition(0);
     motor_gripper.setIdleMode(IdleMode.kBrake);
-
-    motor_gripper.setSoftLimit(SoftLimitDirection.kReverse, 0);
+    motor_gripper.setSoftLimit(SoftLimitDirection.kReverse, -40);
     motor_gripper.enableSoftLimit(SoftLimitDirection.kReverse, true);
   }
 
@@ -180,7 +176,6 @@ public class Robot extends TimedRobot {
    * SmartDashboard. If you prefer the LabVIEW Dashboard, remove all of the
    * chooser code and
    * uncomment the getString line to get the auto name from the text box below the
-   * Gyro
    *
    * <p>
    * You can add additional auto modes by adding additional comparisons to the
@@ -212,13 +207,15 @@ public class Robot extends TimedRobot {
           move_robot(autobalance_power, 0, 1, false);
           if (autobalance_power == 0) {
             time_balanced++;
-          } 
+          }
           if (time_balanced == 10000) {
             System.out.println("Robot is balanced :)");
             balanced = true;
             break;
-          };
-        };
+          }
+          ;
+        }
+        ;
       case kDefaultAuto:
       default:
 
@@ -274,12 +271,12 @@ public class Robot extends TimedRobot {
       move_robot_arm(false, 0, 0);
     }
 
-    if (Math.abs(emulated_gyroscope.getY()) < .1){
+    if (Math.abs(emulated_gyroscope.getY()) < .1) {
       autobalance_robot(navX_gyro.getRoll());
     } else {
       autobalance_robot(emulated_gyroscope.getY());
     }
-    
+
     toggle_gripper(arm_joystick.getRawButton(1));
 
   }
@@ -321,7 +318,8 @@ public class Robot extends TimedRobot {
       output_power = (maximum_power * ((autobalanceAxis + minAngle) / (-maxAngle + minAngle)));
     } else {
       output_power = 0;
-    };
+    }
+    ;
 
     ab_publisher.set(autobalance_power); // display this in network tables for debugging
     return output_power;
@@ -355,7 +353,7 @@ public class Robot extends TimedRobot {
   };
 
   public void toggle_gripper(boolean toggle) {
-    double motor_default_speed = 0.075  ;
+    double motor_default_speed = 0.075;
 
     if (toggle == true) {
       motor_gripper.set(motor_default_speed);
