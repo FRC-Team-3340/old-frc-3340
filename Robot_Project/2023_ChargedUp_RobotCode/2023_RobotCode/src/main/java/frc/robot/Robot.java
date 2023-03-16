@@ -147,7 +147,7 @@ public class Robot extends TimedRobot {
 
     gripper_encoder.setPosition(0);
     motor_gripper.setIdleMode(IdleMode.kBrake);
-    motor_gripper.setSoftLimit(SoftLimitDirection.kReverse, 0);
+    motor_gripper.setSoftLimit(SoftLimitDirection.kReverse, -40);
     motor_gripper.enableSoftLimit(SoftLimitDirection.kReverse, true);
 
   }
