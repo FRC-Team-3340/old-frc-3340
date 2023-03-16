@@ -13,12 +13,14 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard; // Debug use only on
 // WPILib Object Libraries and Inputs
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
+import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.Joystick; // Flight stick interface to control the robot's parts
 import edu.wpi.first.math.controller.PIDController;
 
 // Network Table
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.BooleanPublisher;
 import edu.wpi.first.networktables.DoublePublisher;
 
 // Imports for sensors, motors, and inputs - comment what each import is for
@@ -29,6 +31,7 @@ import com.revrobotics.SparkMaxLimitSwitch;
 import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMax.SoftLimitDirection;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType; // Initializes motor types of the Spark MAX motors.
+import com.revrobotics.SparkMaxLimitSwitch.Type;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -83,7 +86,10 @@ public class Robot extends TimedRobot {
   // initialize robot and control system
   private DifferentialDrive robot = new DifferentialDrive(left_tread, right_tread);
   private PIDController rotate_to = new PIDController(10, 0, 0);
-  private boolean clamp_object;
+  public DigitalInput reverse_switch = new DigitalInput(0);
+  public DigitalInput forwards_switch = new DigitalInput(1);
+
+  
 
   // Logging and debugging utilities
   public NetworkTableInstance inst = NetworkTableInstance.getDefault();
@@ -96,6 +102,7 @@ public class Robot extends TimedRobot {
   public int lastPressed = 0;
 
 
+  // Limit Switches
   /*
    * Important commands for getting user input:
    * joystick.getX(), .getY(), .getZ()
@@ -139,19 +146,13 @@ public class Robot extends TimedRobot {
     // Initialize robot arm and gripper
     motor_arm.restoreFactoryDefaults();
     motor_gripper.restoreFactoryDefaults();
-    motor_arm.setSoftLimit(SoftLimitDirection.kForward, 1);
-    motor_arm.setSoftLimit(SoftLimitDirection.kReverse, -36);
 
-    motor_arm.enableSoftLimit(SoftLimitDirection.kForward, isEnabled());
-    motor_arm.enableSoftLimit(SoftLimitDirection.kForward, isEnabled());
-    
     motor_gripper.set(0);
-
     gripper_encoder.setPosition(0);
     motor_gripper.setIdleMode(IdleMode.kBrake);
+
     motor_gripper.setSoftLimit(SoftLimitDirection.kReverse, 0);
     motor_gripper.enableSoftLimit(SoftLimitDirection.kReverse, true);
-
   }
 
   /**
@@ -164,9 +165,12 @@ public class Robot extends TimedRobot {
 
   @Override
   public void robotPeriodic() {
+    System.out.println(forwards_switch.get());
+    System.out.println(reverse_switch.get());
     ArmEncoderOutput.set(arm_encoder.getPosition());
     GripperOutput.set(gripper_encoder.getPosition());
-  }
+
+    }
 
   /**
    * This autonomous (along with the chooser code above) shows how to select
@@ -239,6 +243,7 @@ public class Robot extends TimedRobot {
     ab_publisher = stats_table.getDoubleTopic("Autobalance Power").publish();
     ArmEncoderOutput = stats_table.getDoubleTopic("Arm Motor Rotations").publish();
     GripperOutput = stats_table.getDoubleTopic("Gripper Encoder").publish();  
+    motor_gripper.set(0.05);
   }
 
   /** This function is called periodically when disabled. */
@@ -249,7 +254,6 @@ public class Robot extends TimedRobot {
   /** This function is called once when test mode is enabled. */
   @Override
   public void testInit() {
-    clamp_object = false;
     arm_encoder.setPosition(0);
   }
 
@@ -258,17 +262,17 @@ public class Robot extends TimedRobot {
   public void testPeriodic() {
     move_robot(robot_joystick.getY(), robot_joystick.getX(), robot_joystick.getRawAxis(3), true);
 
-    // if (Math.abs(arm_joystick.getY()) > 0.1) {
-    //   move_robot_arm(false, arm_joystick.getY(), 0);
-    // } else if (arm_joystick.getRawButton(8) == true) {
-    //   move_robot_arm(true, 0, -5);
-    // } else if (arm_joystick.getRawButton(10) == true) {
-    //   move_robot_arm(true, 0, -20);
-    // } else if (arm_joystick.getRawButton(12) == true) {
-    //   move_robot_arm(true, 0, -30);
-    // } else {
-    //   move_robot_arm(false, 0, 0);
-    // }
+    if (Math.abs(arm_joystick.getY()) > 0.1) {
+      move_robot_arm(false, arm_joystick.getY(), 0);
+    } else if (arm_joystick.getRawButton(8) == true) {
+      move_robot_arm(true, 0, -5);
+    } else if (arm_joystick.getRawButton(10) == true) {
+      move_robot_arm(true, 0, -20);
+    } else if (arm_joystick.getRawButton(12) == true) {
+      move_robot_arm(true, 0, -30);
+    } else {
+      move_robot_arm(false, 0, 0);
+    }
 
     if (Math.abs(emulated_gyroscope.getY()) < .1){
       autobalance_robot(navX_gyro.getRoll());
@@ -325,25 +329,29 @@ public class Robot extends TimedRobot {
 
   public void move_robot_arm(boolean isPreset, double input, double target) {
 
-    if (isPreset == false) {
-      if (input > 0.1) {
-        motor_arm.set(0.025);
-      } else if (input < -0.1) {
-        motor_arm.set(-0.1);
-      } else {
-        motor_arm.set(-0.05);
+      if (isPreset == false) {
+        if (input > 0.1  && forwards_switch.get() == false) {
+          motor_arm.set(0.025);
+        } else if (input < -0.1 && reverse_switch.get() == false) {
+          motor_arm.set(-0.1);
+        } else if (reverse_switch.get() == true || forwards_switch.get() == true) {
+          motor_arm.set(-0.0);
+        } else {
+          motor_arm.set(-0.0);
+        };
+
+      } else if (isPreset == true) {
+        motor_arm.setIdleMode(IdleMode.kCoast);
+        System.out.println(rotate_to.calculate(arm_encoder.getPosition(), target));
+        // System.out.println(arm_encoder.getPosition(), targ);
+        while (Math.abs(arm_encoder.getPosition() - target) > 0.5) {
+          System.out.println(Math.abs(arm_encoder.getPosition() - target));
+          motor_arm.set(rotate_to.calculate(arm_encoder.getPosition(), target));
+        };
+        motor_arm.setIdleMode(IdleMode.kBrake);
+        motor_arm.set(0);
       };
-    } else if (isPreset == true) {
-      motor_arm.setIdleMode(IdleMode.kCoast);
-      System.out.println(rotate_to.calculate(arm_encoder.getPosition(), target));
-      // System.out.println(arm_encoder.getPosition(), targ);
-      while (Math.abs(arm_encoder.getPosition() - target) > 0.5) {
-        System.out.println(Math.abs(arm_encoder.getPosition() - target));
-        motor_arm.set(rotate_to.calculate(arm_encoder.getPosition(), target));
-      };
-      motor_arm.setIdleMode(IdleMode.kBrake);
-      motor_arm.set(0);
-    };
+
   };
 
   public void toggle_gripper(boolean toggle) {
