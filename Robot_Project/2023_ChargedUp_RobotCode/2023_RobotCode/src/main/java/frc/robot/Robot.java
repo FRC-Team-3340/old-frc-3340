@@ -25,7 +25,6 @@ import edu.wpi.first.networktables.DoublePublisher;
 import com.kauailabs.navx.frc.AHRS; // navX-MXP inertial mass unit, has three-axis gyro and accelerometer
 import com.revrobotics.CANSparkMax; // Spark MAX controller, CAN port on the roboRIO; controls motors
 import com.revrobotics.RelativeEncoder;
-import com.revrobotics.SparkMaxLimitSwitch;
 import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMax.SoftLimitDirection;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType; // Initializes motor types of the Spark MAX motors.
@@ -141,10 +140,11 @@ public class Robot extends TimedRobot {
     motor_arm.setSoftLimit(SoftLimitDirection.kForward, 1);
     motor_arm.setSoftLimit(SoftLimitDirection.kReverse, -36);
 
-    motor_arm.enableSoftLimit(SoftLimitDirection.kForward, isEnabled());
-    motor_arm.enableSoftLimit(SoftLimitDirection.kForward, isEnabled());
+    motor_arm.enableSoftLimit(SoftLimitDirection.kForward, true);
+    motor_arm.enableSoftLimit(SoftLimitDirection.kForward, true);
 
-    motor_gripper.setSoftLimit(SoftLimitDirection.kReverse, -1);
+    motor_gripper.setIdleMode(IdleMode.kBrake);
+    motor_gripper.setSoftLimit(SoftLimitDirection.kReverse, -40);
     motor_gripper.enableSoftLimit(SoftLimitDirection.kReverse, true);
   }
 
@@ -169,7 +169,6 @@ public class Robot extends TimedRobot {
    * SmartDashboard. If you prefer the LabVIEW Dashboard, remove all of the
    * chooser code and
    * uncomment the getString line to get the auto name from the text box below the
-   * Gyro
    *
    * <p>
    * You can add additional auto modes by adding additional comparisons to the
