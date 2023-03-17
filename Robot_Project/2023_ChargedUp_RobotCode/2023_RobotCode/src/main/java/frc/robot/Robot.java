@@ -340,7 +340,7 @@ public class Robot extends TimedRobot {
          */
         
          if (input > 0.1  && (forwards_switch.get() == false || limitSwitch_override == true)) {
-          motor_arm.set(arm_joystick.getY() * 0.025);
+          motor_arm.set(arm_joystick.getY() * 0.05);
         } else if (input < -0.1 && reverse_switch.get() == false) {
           motor_arm.set(arm_joystick.getY() * 0.1);
         } else if ((reverse_switch.get() == true || forwards_switch.get() == true) && limitSwitch_override == false) {
