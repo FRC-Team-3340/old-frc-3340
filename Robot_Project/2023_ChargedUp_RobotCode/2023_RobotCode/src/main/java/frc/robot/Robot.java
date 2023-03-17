@@ -5,32 +5,30 @@
 package frc.robot;
 
 // WPILib Imports
-import edu.wpi.first.wpilibj.SPI; // Serial peripheral interface, used 
+import edu.wpi.first.wpilibj.SPI; 
 import edu.wpi.first.wpilibj.TimedRobot; // Robot Type
-import edu.wpi.first.wpilibj.smartdashboard.SendableChooser; // Ignore this
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser; // Chooser for autonomous
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard; // Debug use only on the computer
 
 // WPILib Object Libraries and Inputs
-import edu.wpi.first.wpilibj.drive.DifferentialDrive;
-import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
-import edu.wpi.first.wpilibj.DigitalInput;
-import edu.wpi.first.wpilibj.Joystick; // Flight stick interface to control the robot's parts
+import edu.wpi.first.wpilibj.drive.DifferentialDrive;                 // To use arcade drive
+import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;       // Conjoins two motors as one
+import edu.wpi.first.wpilibj.DigitalInput;                            // Limit Switch interface for the robot's arm
+import edu.wpi.first.wpilibj.Joystick;                                // Joystick interface for controlling the robot
 import edu.wpi.first.math.controller.PIDController;
 
 // Network Table
-import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTable;            
 import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.networktables.BooleanPublisher;
 import edu.wpi.first.networktables.DoublePublisher;
 
 // Imports for sensors, motors, and inputs - comment what each import is for
-import com.kauailabs.navx.frc.AHRS; // navX-MXP inertial mass unit, has three-axis gyro and accelerometer
-import com.revrobotics.CANSparkMax; // Spark MAX controller, CAN port on the roboRIO; controls motors
+import com.kauailabs.navx.frc.AHRS; // navX-MXP IMU that has a useful gyroscope
+import com.revrobotics.CANSparkMax; // Spark MAX motor controller
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMax.SoftLimitDirection;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType; // Initializes motor types of the Spark MAX motors.
-import com.revrobotics.SparkMaxLimitSwitch.Type;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -87,7 +85,7 @@ public class Robot extends TimedRobot {
   private PIDController rotate_to = new PIDController(10, 0, 0);
   public DigitalInput reverse_switch = new DigitalInput(0);
   public DigitalInput forwards_switch = new DigitalInput(1);
-
+  private boolean limitSwitch_override = false;
   
 
   // Logging and debugging utilities
@@ -161,10 +159,9 @@ public class Robot extends TimedRobot {
 
   @Override
   public void robotPeriodic() {
-    System.out.println(forwards_switch.get());
-    System.out.println(reverse_switch.get());
-    ArmEncoderOutput.set(arm_encoder.getPosition());
-    GripperOutput.set(gripper_encoder.getPosition());
+    SmartDashboard.putNumber("Arm Position (Encoder)", arm_encoder.getPosition());
+    SmartDashboard.putNumber("Gripper Position (Encoder)", gripper_encoder.getPosition());
+    SmartDashboard.putBoolean("Disable Limit Switches", limitSwitch_override);
 
     }
 
@@ -257,6 +254,8 @@ public class Robot extends TimedRobot {
   /* This function is called periodically during test mode. */
   @Override
   public void testPeriodic() {
+    limitSwitch_override = SmartDashboard.getBoolean("Forward Limit Enabled", false);
+    
     move_robot(robot_joystick.getY(), robot_joystick.getX(), robot_joystick.getRawAxis(3), true);
 
     if (Math.abs(arm_joystick.getY()) > 0.1) {
@@ -328,14 +327,28 @@ public class Robot extends TimedRobot {
   public void move_robot_arm(boolean isPreset, double input, double target) {
 
       if (isPreset == false) {
-        if (input > 0.1  && forwards_switch.get() == false) {
-          motor_arm.set(0.025);
+        /* Breaking down the (if) statement:
+          -> &&, ||
+              * Boolean operators for and/or. && = and, || == or
+          -> input > 0.1, input < -0.1
+              * This acts as a deadzone for analog control of the robot's arm. 
+              * The arm activates upon passing this threshold.
+          -> forwards_switch.get(), reverse_switch.get()
+              * This gets a Boolean from the limit switch for when the arm reaches its forwards or reverse limit.
+              * The arm moves up when the motor is going in reverse. The arm moves down when the motor is going forwards.
+          -> limitSwitch_override == true
+              * In the event any of the limit switches short in competiton and report only one value, this will force the
+                motor to continue functioning instead of seizing because of a broken limit switch.
+         */
+        
+         if (input > 0.1  && (forwards_switch.get() == false || limitSwitch_override == true)) {
+          motor_arm.set(arm_joystick.getY() * 0.025);
         } else if (input < -0.1 && reverse_switch.get() == false) {
-          motor_arm.set(-0.1);
-        } else if (reverse_switch.get() == true || forwards_switch.get() == true) {
-          motor_arm.set(-0.0);
+          motor_arm.set(arm_joystick.getY() * 0.1);
+        } else if ((reverse_switch.get() == true || forwards_switch.get() == true) && limitSwitch_override == false) {
+          motor_arm.set(0.0);
         } else {
-          motor_arm.set(-0.0);
+          motor_arm.set(0.0);
         };
 
       } else if (isPreset == true) {

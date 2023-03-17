@@ -37,11 +37,6 @@
       "/SmartDashboard/Auto choices": "String Chooser"
     },
     "windows": {
-      "/LiveWindow/Ungrouped/DifferentialDrive[1]": {
-        "window": {
-          "visible": true
-        }
-      },
       "/SmartDashboard/Auto choices": {
         "window": {
           "visible": true
@@ -107,10 +102,18 @@
     "Plot <0>": {
       "plots": [
         {
+          "axis": [
+            {
+              "tickLabels": false
+            }
+          ],
           "height": 420,
           "legendLocation": 1
         }
-      ]
+      ],
+      "window": {
+        "visible": false
+      }
     }
   }
 }
