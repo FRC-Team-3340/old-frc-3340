@@ -87,7 +87,6 @@ public class Robot extends TimedRobot {
   public DigitalInput forwards_switch = new DigitalInput(1);
   private boolean limitSwitch_override = false;
   
-
   // Logging and debugging utilities
   public NetworkTableInstance inst = NetworkTableInstance.getDefault();
   public NetworkTable stats_table = inst.getTable("datatable");
@@ -162,7 +161,6 @@ public class Robot extends TimedRobot {
     SmartDashboard.putNumber("Arm Position (Encoder)", arm_encoder.getPosition());
     SmartDashboard.putNumber("Gripper Position (Encoder)", gripper_encoder.getPosition());
     SmartDashboard.putBoolean("Disable Limit Switches", limitSwitch_override);
-
     }
 
   /**
@@ -212,7 +210,7 @@ public class Robot extends TimedRobot {
           }
           ;
         }
-        ;
+        ; //Why these alone? =(
       case kDefaultAuto:
       default:
 
