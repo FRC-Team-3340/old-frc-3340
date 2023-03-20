@@ -41,6 +41,8 @@ import com.revrobotics.CANSparkMaxLowLevel.MotorType; // Initializes motor types
  * project.
  */
 
+ // UNLESS ABSOLUTELY NECCESARY, DO NOT CHANGE ANYTHING DEEMED "FINAL"
+
 public class Robot extends TimedRobot {
     // Autonomous
     private static final String kDefaultAuto = "Default";
@@ -50,43 +52,49 @@ public class Robot extends TimedRobot {
     private final SendableChooser<String> m_chooser = new SendableChooser<>();
 
     // CANSparkMax IDs
-    private static final int motorID_LF = 1; // Front Left Motor ID
-    private static final int motorID_RF = 2; // Front Right Motor ID
-    private static final int motorID_LR = 3; // Rear Left Motor ID
-    private static final int motorID_RR = 4; // Rear Right Motor ID
-    private static final int motorID_gripper = 7; // Arm Motor ID
-    private static final int motorID_arm = 9;
+    private static final int motorID_LF = 1;        // Front Left Motor ID
+    private static final int motorID_RF = 2;        // Front Right Motor ID
+    private static final int motorID_LR = 3;        // Rear Left Motor ID
+    private static final int motorID_RR = 4;        // Rear Right Motor ID
+    private static final int motorID_gripper = 7;   // Gripper Motor ID
+    private static final int motorID_arm = 9;       // Arm Motor ID
 
     private MotorType motor_type = MotorType.kBrushless; // Type of motor is brushless. Do not change.
 
     // Motor controllers
-    private CANSparkMax motorL_front = new CANSparkMax(motorID_LF, motor_type);
-    private CANSparkMax motorL_rear = new CANSparkMax(motorID_LR, motor_type);
-    private CANSparkMax motorR_front = new CANSparkMax(motorID_RF, motor_type);
-    private CANSparkMax motorR_rear = new CANSparkMax(motorID_RR, motor_type);
-    private CANSparkMax motor_arm = new CANSparkMax(motorID_arm, motor_type);
-    private CANSparkMax motor_gripper = new CANSparkMax(motorID_gripper, motor_type);
+    private final CANSparkMax motorL_front = new CANSparkMax(motorID_LF, motor_type);
+    private final CANSparkMax motorL_rear = new CANSparkMax(motorID_LR, motor_type);
+    private final CANSparkMax motorR_front = new CANSparkMax(motorID_RF, motor_type);
+    private final CANSparkMax motorR_rear = new CANSparkMax(motorID_RR, motor_type);
+    private final CANSparkMax motor_arm = new CANSparkMax(motorID_arm, motor_type);
+    private final CANSparkMax motor_gripper = new CANSparkMax(motorID_gripper, motor_type);
 
     // Motor, sensor, and input config
     private AHRS navX_gyro = new AHRS(SPI.Port.kMXP); // navX gyroscope object, SPI-MXP
+    
+    // merge both together
     private Joystick robot_joystick = new Joystick(0); // Create joystick interface object
     private Joystick arm_joystick = new Joystick(1);
-    private Joystick emulated_gyroscope = new Joystick(2);
+    private Joystick emulated_gyroscope = new Joystick(2); // ignore this
+
     public RelativeEncoder arm_encoder = motor_arm.getEncoder();
     public RelativeEncoder gripper_encoder = motor_gripper.getEncoder();
 
-    private double MaxPower = .5; // Base maximum power
+    private double MaxPower = 0.5; // Base maximum power
 
     // Create objects for both motor pairs to act as one
-    private MotorControllerGroup left_tread = new MotorControllerGroup(motorL_front, motorL_rear);
-    private MotorControllerGroup right_tread = new MotorControllerGroup(motorR_front, motorR_rear);
+    private final  MotorControllerGroup left_tread = new MotorControllerGroup(motorL_front, motorL_rear);
+    private final MotorControllerGroup right_tread = new MotorControllerGroup(motorR_front, motorR_rear);
 
     // initialize robot and control system
     private DifferentialDrive robot = new DifferentialDrive(left_tread, right_tread);
-    private PIDController rotate_to = new PIDController(10, 0, 0);
+    
+    // FINE-TUNE: Controls rotation speed to preset option.
+    private PIDController rotate_to = new PIDController(0.5, 0.5, 0.5);
+    // LIMIT SWITCHES
     public DigitalInput reverse_switch = new DigitalInput(0);
     public DigitalInput forwards_switch = new DigitalInput(1);
-    private boolean limitSwitch_override = false;
+    private boolean limitSwitch_override = false; // IF LIMIT SWITCH BREAKS, SET TO TRUE ON SMARTDASHBOARD OR HERE.
 
     // Logging and debugging utilities
     public NetworkTableInstance inst = NetworkTableInstance.getDefault();
@@ -136,17 +144,19 @@ public class Robot extends TimedRobot {
         // Initialize robot
         m_chooser.setDefaultOption("Default Auto", kDefaultAuto);
         m_chooser.addOption("My Auto", kCustomAuto);
+        m_chooser.addOption("Autobalance", kAutobalance);
         SmartDashboard.putData("Auto choices", m_chooser);
 
         // Initialize robot arm and gripper
         motor_arm.restoreFactoryDefaults();
         motor_gripper.restoreFactoryDefaults();
 
-        motor_gripper.set(0);
+        motor_gripper.set(1);
+        // Insert delay.
+
         gripper_encoder.setPosition(0);
         motor_gripper.setIdleMode(IdleMode.kBrake);
         motor_gripper.setSoftLimit(SoftLimitDirection.kReverse, -40);
-        motor_gripper.enableSoftLimit(SoftLimitDirection.kReverse, true);
     }
 
     /**
@@ -210,10 +220,8 @@ public class Robot extends TimedRobot {
                         System.out.println("Robot is balanced :)");
                         balanced = true;
                         break;
-                    }
-                    ;
-                }
-                ; //Why these alone? =(
+                    };
+                }; //Why these alone? =(
             case kDefaultAuto:
             default:
 
@@ -226,6 +234,9 @@ public class Robot extends TimedRobot {
      */
     @Override
     public void teleopInit() {
+        gripper_encoder.setPosition(0);
+        motor_gripper.enableSoftLimit(SoftLimitDirection.kReverse, true);
+
     }
 
     /**
@@ -233,7 +244,26 @@ public class Robot extends TimedRobot {
      */
     @Override
     public void teleopPeriodic() {
+        limitSwitch_override = SmartDashboard.getBoolean("Forward Limit Enabled", false);
+
         move_robot(robot_joystick.getY(), robot_joystick.getX(), robot_joystick.getRawAxis(3), true);
+
+        if (Math.abs(arm_joystick.getY()) > 0.1) {
+            move_robot_arm(false, arm_joystick.getY(), 0);
+        } else if (arm_joystick.getRawButton(8) == true) {
+            move_robot_arm(true, 0, -5);
+        } else if (arm_joystick.getRawButton(10) == true) {
+            move_robot_arm(true, 0, -20);
+        } else if (arm_joystick.getRawButton(12) == true) {
+            move_robot_arm(true, 0, -30);
+        } else {
+            move_robot_arm(false, 0, 0);
+        }
+
+        autobalance_robot(emulated_gyroscope.getY());
+
+        toggle_gripper(arm_joystick.getRawButton(1));
+    
     }
 
     /**
@@ -245,6 +275,7 @@ public class Robot extends TimedRobot {
         ArmEncoderOutput = stats_table.getDoubleTopic("Arm Motor Rotations").publish();
         GripperOutput = stats_table.getDoubleTopic("Gripper Encoder").publish();
         motor_gripper.set(0.05);
+        motor_gripper.enableSoftLimit(SoftLimitDirection.kReverse, false);
     }
 
     /**
@@ -259,7 +290,7 @@ public class Robot extends TimedRobot {
      */
     @Override
     public void testInit() {
-        arm_encoder.setPosition(0);
+        // arm_encoder.setPosition(0);
     }
 
     /* This function is called periodically during test mode. */
@@ -349,7 +380,7 @@ public class Robot extends TimedRobot {
               * Boolean operators for and/or. && = and, || == or
           -> input > 0.1, input < -0.1
               * This acts as a deadzone for analog control of the robot's arm. 
-              * The arm activates upon passing this threshold.
+              * The arm activates upon passing this threshold. 
           -> forwards_switch.get(), reverse_switch.get()
               * This gets a Boolean from the limit switch for when the arm reaches its forwards or reverse limit.
               * The arm moves up when the motor is going in reverse. The arm moves down when the motor is going forwards.
@@ -380,12 +411,8 @@ public class Robot extends TimedRobot {
             ;
             motor_arm.setIdleMode(IdleMode.kBrake);
             motor_arm.set(0);
-        }
-        ;
-
-    }
-
-    ;
+        };
+    };
 
     public void toggle_gripper(boolean toggle) {
         double motor_default_speed = 0.075;

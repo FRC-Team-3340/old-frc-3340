@@ -1,5 +1,8 @@
 {
   "NetworkTables": {
+    "Transitory Values": {
+      "open": false
+    },
     "transitory": {
       "LiveWindow": {
         ".status": {
