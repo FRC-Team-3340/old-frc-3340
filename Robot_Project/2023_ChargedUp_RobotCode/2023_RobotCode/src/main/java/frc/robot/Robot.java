@@ -155,7 +155,7 @@ public class Robot extends TimedRobot {
         SmartDashboard.putNumber("Arm Position (Encoder)", arm_encoder.getPosition());
         SmartDashboard.putNumber("Gripper Position (Encoder)", gripper_encoder.getPosition());
         SmartDashboard.putNumber("Maximum Drive Power", max_drivePower);
-        SmartDashboard.putNumber("Maximum Arm Power", max_armPower);
+        SmartDashboard.putNumber("Maximum Arm P]ower", max_armPower);
         SmartDashboard.putBoolean("Disable Limit Switches", limitSwitch_override);
 
         // Initialize robot arm and gripper
@@ -199,6 +199,7 @@ public class Robot extends TimedRobot {
     @Override
     public void autonomousInit() {
         m_autoSelected = m_chooser.getSelected();
+        navX_gyro.calibrate();
         // m_autoSelected = SmartDashboard.getString("Auto Selector", kDefaultAuto);
         System.out.println("Auto selected: " + m_autoSelected);
     }
@@ -251,9 +252,9 @@ public class Robot extends TimedRobot {
         limitSwitch_override = SmartDashboard.getBoolean("Forward Limit Enabled", false);
 
         // Driving the robot, allowing support for twisting and moving stick left and right.
-        if (robot_joystick.getX() > robot_joystick.getZ()){
+        if (Math.abs(robot_joystick.getX()) > Math.abs(robot_joystick.getZ())){
             move_robot(robot_joystick.getY(), robot_joystick.getX(), robot_joystick.getRawAxis(3), true);
-        } else if (robot_joystick.getX() < robot_joystick.getZ()) {
+        } else if (Math.abs(robot_joystick.getX()) < Math.abs(robot_joystick.getZ())) {
             move_robot(robot_joystick.getY(), robot_joystick.getZ(), robot_joystick.getRawAxis(3), true);
         } else {
             move_robot(robot_joystick.getY(), robot_joystick.getX(), robot_joystick.getRawAxis(3), true);
@@ -306,7 +307,7 @@ public class Robot extends TimedRobot {
     public void testPeriodic() {
         limitSwitch_override = SmartDashboard.getBoolean("Forward Limit Enabled", false);
 
-        move_robot(robot_joystick.getY(), robot_joystick.getX(), robot_joystick.getRawAxis(3), true);
+        move_robot(robot_joystick.getY(), robot_joystick.getZ(), robot_joystick.getRawAxis(3), true);
 
         if (Math.abs(arm_joystick.getY()) > 0.1) {
             move_robot_arm(false, arm_joystick.getY(), 0);
@@ -358,7 +359,7 @@ public class Robot extends TimedRobot {
         // YOU CAN CHANGE
         double maxAngle = 15.0;
         double minAngle = 2.5;
-        double maximum_power = 0.2;
+        double maximum_power = 0.35;
         
         // DO NOT CHANGE
         double autobalanceAxis = source;
@@ -367,11 +368,11 @@ public class Robot extends TimedRobot {
         if (autobalanceAxis > maxAngle) {
             output_power = -maximum_power;
         } else if (autobalanceAxis < -maxAngle) {
-            output_power = maximum_power;
+            output_power = maximum_power/1.25;
         } else if (autobalanceAxis > minAngle) {
             output_power = -(maximum_power * ((autobalanceAxis - minAngle) / (maxAngle - minAngle)));
         } else if (autobalanceAxis < -minAngle) {
-            output_power = (maximum_power * ((autobalanceAxis + minAngle) / (-maxAngle + minAngle)));
+            output_power = (maximum_power/1.25 * ((autobalanceAxis + minAngle) / (-maxAngle + minAngle)));
         } else {
             output_power = 0;
         };
