@@ -252,9 +252,9 @@ public class Robot extends TimedRobot {
         limitSwitch_override = SmartDashboard.getBoolean("Forward Limit Enabled", false);
 
         // Driving the robot, allowing support for twisting and moving stick left and right.
-        if (robot_joystick.getX() > robot_joystick.getZ()){
+        if (Math.abs(robot_joystick.getX()) > Math.abs(robot_joystick.getZ())){
             move_robot(robot_joystick.getY(), robot_joystick.getX(), robot_joystick.getRawAxis(3), true);
-        } else if (robot_joystick.getX() < robot_joystick.getZ()) {
+        } else if (Math.abs(robot_joystick.getX()) < Math.abs(robot_joystick.getZ())) {
             move_robot(robot_joystick.getY(), robot_joystick.getZ(), robot_joystick.getRawAxis(3), true);
         } else {
             move_robot(robot_joystick.getY(), robot_joystick.getX(), robot_joystick.getRawAxis(3), true);
@@ -359,7 +359,7 @@ public class Robot extends TimedRobot {
         // YOU CAN CHANGE
         double maxAngle = 15.0;
         double minAngle = 2.5;
-        double maximum_power = 0.2;
+        double maximum_power = 0.35;
         
         // DO NOT CHANGE
         double autobalanceAxis = source;
@@ -368,11 +368,11 @@ public class Robot extends TimedRobot {
         if (autobalanceAxis > maxAngle) {
             output_power = -maximum_power;
         } else if (autobalanceAxis < -maxAngle) {
-            output_power = maximum_power;
+            output_power = maximum_power/1.25;
         } else if (autobalanceAxis > minAngle) {
             output_power = -(maximum_power * ((autobalanceAxis - minAngle) / (maxAngle - minAngle)));
         } else if (autobalanceAxis < -minAngle) {
-            output_power = (maximum_power * ((autobalanceAxis + minAngle) / (-maxAngle + minAngle)));
+            output_power = (maximum_power/1.25 * ((autobalanceAxis + minAngle) / (-maxAngle + minAngle)));
         } else {
             output_power = 0;
         };
