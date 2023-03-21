@@ -80,7 +80,6 @@ public class Robot extends TimedRobot {
     public RelativeEncoder arm_encoder = motor_arm.getEncoder();
     public RelativeEncoder gripper_encoder = motor_gripper.getEncoder();
 
-    private double MaxPower = 0.5; // Base maximum power for driving the robot
 
     // Create objects for both motor pairs to act as one, don't tamper
     private final MotorControllerGroup left_tread = new MotorControllerGroup(motorL_front, motorL_rear);
@@ -95,6 +94,10 @@ public class Robot extends TimedRobot {
     // LIMIT SWITCHES
     public DigitalInput reverse_switch = new DigitalInput(0);
     public DigitalInput forwards_switch = new DigitalInput(1);
+
+    // GLOBAL FOR SMART DASHBOARD.
+    private double max_drivePower = 0.5; // Base maximum power for driving the robot
+    private double max_armPower = 0.25;
     private boolean limitSwitch_override = false; // IF LIMIT SWITCH BREAKS, SET TO TRUE ON SMARTDASHBOARD OR HERE.
 
     // Logging and debugging utilities
@@ -148,6 +151,12 @@ public class Robot extends TimedRobot {
         m_chooser.addOption("Autobalance", kAutobalance);
         SmartDashboard.putData("Auto choices", m_chooser);
 
+        SmartDashboard.putNumber("Arm Position (Encoder)", arm_encoder.getPosition());
+        SmartDashboard.putNumber("Gripper Position (Encoder)", gripper_encoder.getPosition());
+        SmartDashboard.putNumber("Maximum Drive Power", max_drivePower);
+        SmartDashboard.putNumber("Maximum Arm Power", max_armPower);
+        SmartDashboard.putBoolean("Disable Limit Switches", limitSwitch_override);
+
         // Initialize robot arm and gripper
         motor_arm.restoreFactoryDefaults();
         motor_gripper.restoreFactoryDefaults();
@@ -166,9 +175,7 @@ public class Robot extends TimedRobot {
 
     @Override
     public void robotPeriodic() {
-        SmartDashboard.putNumber("Arm Position (Encoder)", arm_encoder.getPosition());
-        SmartDashboard.putNumber("Gripper Position (Encoder)", gripper_encoder.getPosition());
-        SmartDashboard.putBoolean("Disable Limit Switches", limitSwitch_override);
+
     }
 
     /**
@@ -243,7 +250,7 @@ public class Robot extends TimedRobot {
         limitSwitch_override = SmartDashboard.getBoolean("Forward Limit Enabled", false);
 
         move_robot(robot_joystick.getY(), robot_joystick.getX(), robot_joystick.getRawAxis(3), true);
-
+        
         if (Math.abs(arm_joystick.getY()) > 0.1) {
             move_robot_arm(false, arm_joystick.getY(), 0);
         } else if (arm_joystick.getRawButton(8) == true) {
@@ -268,7 +275,6 @@ public class Robot extends TimedRobot {
     @Override
     public void disabledInit() {
         motor_gripper.enableSoftLimit(SoftLimitDirection.kReverse, false);
-        motor_gripper.set(0.05);
         ab_publisher = stats_table.getDoubleTopic("Autobalance Power").publish();
         ArmEncoderOutput = stats_table.getDoubleTopic("Arm Motor Rotations").publish();
         GripperOutput = stats_table.getDoubleTopic("Gripper Encoder").publish();
@@ -279,6 +285,7 @@ public class Robot extends TimedRobot {
      */
     @Override
     public void disabledPeriodic() {
+        motor_gripper.set(0.05);
     }
 
     /**
@@ -337,7 +344,7 @@ public class Robot extends TimedRobot {
 
     public void move_robot(double forward, double turn, double speed, boolean speed_isSliderInput) {
         if (speed_isSliderInput == true) {
-            speed = MaxPower * (Math.abs(speed - 1)) / 2;
+            speed = max_drivePower * (Math.abs(speed - 1)) / 2;
         }
         robot.arcadeDrive(forward * speed, turn * speed); // Wilbert, Ryan
     }
@@ -384,9 +391,9 @@ public class Robot extends TimedRobot {
                 motor to continue functioning instead of seizing because of a broken limit switch.
          */
             if (input > 0.1 /*Deadzone*/ && (forwards_switch.get() == false /*Limit Switch Not Pressed*/ || limitSwitch_override == true /*Limit Switches Disabled*/)) {
-                motor_arm.set(arm_joystick.getY() * 0.025);
-            } else if (input < -0.1 && reverse_switch.get() == false) {
-                motor_arm.set(arm_joystick.getY() * 0.1);
+                motor_arm.set(arm_joystick.getY() * max_armPower);
+            } else if (input < -0.1 && (reverse_switch.get() == false || limitSwitch_override == true)) {
+                motor_arm.set(arm_joystick.getY() * max_armPower);
             } else if ((reverse_switch.get() == true || forwards_switch.get() == true) && limitSwitch_override == false) {
                 motor_arm.set(0.0);
             } else {
@@ -396,7 +403,7 @@ public class Robot extends TimedRobot {
         } else if (isPreset == true) {
             motor_arm.setIdleMode(IdleMode.kCoast);
             while (Math.abs(arm_encoder.getPosition() - target) > 0.5) {
-                motor_arm.set(rotate_to.calculate(arm_encoder.getPosition(), target));
+                motor_arm.set(rotate_to.calculate(arm_encoder.getPosition(), target) * max_armPower);
             };
             motor_arm.setIdleMode(IdleMode.kBrake);
             motor_arm.set(0);
