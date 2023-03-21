@@ -154,7 +154,7 @@ public class Robot extends TimedRobot {
         SmartDashboard.putNumber("Arm Position (Encoder)", arm_encoder.getPosition());
         SmartDashboard.putNumber("Gripper Position (Encoder)", gripper_encoder.getPosition());
         SmartDashboard.putNumber("Maximum Drive Power", max_drivePower);
-        SmartDashboard.putNumber("Maximum Arm Power", max_armPower);
+        SmartDashboard.putNumber("Maximum Arm P]ower", max_armPower);
         SmartDashboard.putBoolean("Disable Limit Switches", limitSwitch_override);
 
         // Initialize robot arm and gripper
@@ -198,6 +198,7 @@ public class Robot extends TimedRobot {
     @Override
     public void autonomousInit() {
         m_autoSelected = m_chooser.getSelected();
+        navX_gyro.calibrate();
         // m_autoSelected = SmartDashboard.getString("Auto Selector", kDefaultAuto);
         System.out.println("Auto selected: " + m_autoSelected);
     }
@@ -301,7 +302,7 @@ public class Robot extends TimedRobot {
     public void testPeriodic() {
         limitSwitch_override = SmartDashboard.getBoolean("Forward Limit Enabled", false);
 
-        move_robot(robot_joystick.getY(), robot_joystick.getX(), robot_joystick.getRawAxis(3), true);
+        move_robot(robot_joystick.getY(), robot_joystick.getZ(), robot_joystick.getRawAxis(3), true);
 
         if (Math.abs(arm_joystick.getY()) > 0.1) {
             move_robot_arm(false, arm_joystick.getY(), 0);
