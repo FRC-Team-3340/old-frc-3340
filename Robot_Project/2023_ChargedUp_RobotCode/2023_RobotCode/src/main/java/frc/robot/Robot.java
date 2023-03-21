@@ -89,7 +89,7 @@ public class Robot extends TimedRobot {
     private DifferentialDrive robot = new DifferentialDrive(left_tread, right_tread);
     
     // FINE-TUNE: Controls rotation speed to preset option.
-    private PIDController rotate_to = new PIDController(0.01, 0.01, 0.5);
+    private PIDController rotate_to = new PIDController(0.1, 0.01, 0.5);
 
     // LIMIT SWITCHES
     public DigitalInput reverse_switch = new DigitalInput(0);
@@ -102,7 +102,7 @@ public class Robot extends TimedRobot {
 
     // Logging and debugging utilities
     public NetworkTableInstance inst = NetworkTableInstance.getDefault();
-    public NetworkTable stats_table = inst.getTable("datatable");
+    public NetworkTable stats_table = inst.getTable("SmartDashboard");
     public DoublePublisher ab_publisher;
     public DoublePublisher gyroRoll_output;
     public DoublePublisher ArmEncoderOutput;
@@ -151,6 +151,7 @@ public class Robot extends TimedRobot {
         m_chooser.addOption("Autobalance", kAutobalance);
         SmartDashboard.putData("Auto choices", m_chooser);
 
+        SmartDashboard.putData("PID", rotate_to);
         SmartDashboard.putNumber("Arm Position (Encoder)", arm_encoder.getPosition());
         SmartDashboard.putNumber("Gripper Position (Encoder)", gripper_encoder.getPosition());
         SmartDashboard.putNumber("Maximum Drive Power", max_drivePower);
@@ -250,7 +251,14 @@ public class Robot extends TimedRobot {
     public void teleopPeriodic() {
         limitSwitch_override = SmartDashboard.getBoolean("Forward Limit Enabled", false);
 
-        move_robot(robot_joystick.getY(), robot_joystick.getX(), robot_joystick.getRawAxis(3), true);
+        // Driving the robot, allowing support for twisting and moving stick left and right.
+        if (robot_joystick.getX() > robot_joystick.getZ()){
+            move_robot(robot_joystick.getY(), robot_joystick.getX(), robot_joystick.getRawAxis(3), true);
+        } else if (robot_joystick.getX() < robot_joystick.getZ()) {
+            move_robot(robot_joystick.getY(), robot_joystick.getZ(), robot_joystick.getRawAxis(3), true);
+        } else {
+            move_robot(robot_joystick.getY(), robot_joystick.getX(), robot_joystick.getRawAxis(3), true);
+        } 
         
         if (Math.abs(arm_joystick.getY()) > 0.1) {
             move_robot_arm(false, arm_joystick.getY(), 0);
@@ -264,10 +272,7 @@ public class Robot extends TimedRobot {
             move_robot_arm(false, 0, 0);
         }
 
-        autobalance_robot(emulated_gyroscope.getY());
-
         // toggle_gripper(arm_joystick.getRawButton(1));
-    
     }
 
     /**
@@ -404,8 +409,12 @@ public class Robot extends TimedRobot {
         } else if (isPreset == true) {
             motor_arm.setIdleMode(IdleMode.kCoast);
             while (Math.abs(arm_encoder.getPosition() - target) > 0.5) {
-                // if 
-                motor_arm.set(rotate_to.calculate(arm_encoder.getPosition(), target) * max_armPower);
+                
+                if (rotate_to.calculate(arm_encoder.getPosition(), target) > max_armPower) {
+                    motor_arm.set(max_armPower);
+                } else {
+                    motor_arm.set(rotate_to.calculate(arm_encoder.getPosition(), target) * max_armPower);
+                };
             };
             motor_arm.setIdleMode(IdleMode.kBrake);
             motor_arm.set(0);
