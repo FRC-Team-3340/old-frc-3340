@@ -51,7 +51,7 @@ public class Robot extends TimedRobot {
     private String m_autoSelected;
     private final SendableChooser<String> m_chooser = new SendableChooser<>();
 
-    // CANSparkMax IDs
+    // CANSparkMax IDs -> These you can change in an emergency despite being final.
     private static final int motorID_LF = 1;        // Front Left Motor ID
     private static final int motorID_RF = 2;        // Front Right Motor ID
     private static final int motorID_LR = 3;        // Rear Left Motor ID
@@ -59,7 +59,7 @@ public class Robot extends TimedRobot {
     private static final int motorID_gripper = 7;   // Gripper Motor ID
     private static final int motorID_arm = 9;       // Arm Motor ID
 
-    private MotorType motor_type = MotorType.kBrushless; // Type of motor is brushless. Do not change.
+    private final MotorType motor_type = MotorType.kBrushless; // Type of motor is brushless. Do not change.
 
     // Motor controllers
     private final CANSparkMax motorL_front = new CANSparkMax(motorID_LF, motor_type);
@@ -80,10 +80,10 @@ public class Robot extends TimedRobot {
     public RelativeEncoder arm_encoder = motor_arm.getEncoder();
     public RelativeEncoder gripper_encoder = motor_gripper.getEncoder();
 
-    private double MaxPower = 0.5; // Base maximum power
+    private double MaxPower = 0.5; // Base maximum power for driving the robot
 
-    // Create objects for both motor pairs to act as one
-    private final  MotorControllerGroup left_tread = new MotorControllerGroup(motorL_front, motorL_rear);
+    // Create objects for both motor pairs to act as one, don't tamper
+    private final MotorControllerGroup left_tread = new MotorControllerGroup(motorL_front, motorL_rear);
     private final MotorControllerGroup right_tread = new MotorControllerGroup(motorR_front, motorR_rear);
 
     // initialize robot and control system
@@ -91,6 +91,7 @@ public class Robot extends TimedRobot {
     
     // FINE-TUNE: Controls rotation speed to preset option.
     private PIDController rotate_to = new PIDController(0.5, 0.5, 0.5);
+
     // LIMIT SWITCHES
     public DigitalInput reverse_switch = new DigitalInput(0);
     public DigitalInput forwards_switch = new DigitalInput(1);
@@ -151,10 +152,6 @@ public class Robot extends TimedRobot {
         motor_arm.restoreFactoryDefaults();
         motor_gripper.restoreFactoryDefaults();
 
-        motor_gripper.set(1);
-        // Insert delay.
-
-        gripper_encoder.setPosition(0);
         motor_gripper.setIdleMode(IdleMode.kBrake);
         motor_gripper.setSoftLimit(SoftLimitDirection.kReverse, -40);
     }
@@ -236,7 +233,6 @@ public class Robot extends TimedRobot {
     public void teleopInit() {
         gripper_encoder.setPosition(0);
         motor_gripper.enableSoftLimit(SoftLimitDirection.kReverse, true);
-
     }
 
     /**
@@ -271,11 +267,11 @@ public class Robot extends TimedRobot {
      */
     @Override
     public void disabledInit() {
+        motor_gripper.enableSoftLimit(SoftLimitDirection.kReverse, false);
+        motor_gripper.set(0.05);
         ab_publisher = stats_table.getDoubleTopic("Autobalance Power").publish();
         ArmEncoderOutput = stats_table.getDoubleTopic("Arm Motor Rotations").publish();
         GripperOutput = stats_table.getDoubleTopic("Gripper Encoder").publish();
-        motor_gripper.set(0.05);
-        motor_gripper.enableSoftLimit(SoftLimitDirection.kReverse, false);
     }
 
     /**
@@ -347,10 +343,13 @@ public class Robot extends TimedRobot {
     }
 
     public double autobalance_robot(double source) {
+        // YOU CAN CHANGE
         double maxAngle = 15.0;
         double minAngle = 2.5;
-        double autobalanceAxis = source;
         double maximum_power = 0.2;
+        
+        // DO NOT CHANGE
+        double autobalanceAxis = source;
         double output_power = 0;
 
         if (autobalanceAxis > maxAngle) {
@@ -363,17 +362,13 @@ public class Robot extends TimedRobot {
             output_power = (maximum_power * ((autobalanceAxis + minAngle) / (-maxAngle + minAngle)));
         } else {
             output_power = 0;
-        }
-        ;
+        };
 
         ab_publisher.set(autobalance_power); // display this in network tables for debugging
         return output_power;
-    }
-
-    ;
+    };
 
     public void move_robot_arm(boolean isPreset, double input, double target) {
-
         if (isPreset == false) {
         /* Breaking down the (if) statement:
           -> &&, ||
@@ -388,8 +383,7 @@ public class Robot extends TimedRobot {
               * In the event any of the limit switches short in competiton and report only one value, this will force the
                 motor to continue functioning instead of seizing because of a broken limit switch.
          */
-
-            if (input > 0.1 && (forwards_switch.get() == false || limitSwitch_override == true)) {
+            if (input > 0.1 /*Deadzone*/ && (forwards_switch.get() == false /*Limit Switch Not Pressed*/ || limitSwitch_override == true /*Limit Switches Disabled*/)) {
                 motor_arm.set(arm_joystick.getY() * 0.025);
             } else if (input < -0.1 && reverse_switch.get() == false) {
                 motor_arm.set(arm_joystick.getY() * 0.1);
@@ -397,18 +391,13 @@ public class Robot extends TimedRobot {
                 motor_arm.set(0.0);
             } else {
                 motor_arm.set(0.0);
-            }
-            ;
+            };
 
         } else if (isPreset == true) {
             motor_arm.setIdleMode(IdleMode.kCoast);
-            System.out.println(rotate_to.calculate(arm_encoder.getPosition(), target));
-            // System.out.println(arm_encoder.getPosition(), targ);
             while (Math.abs(arm_encoder.getPosition() - target) > 0.5) {
-                System.out.println(Math.abs(arm_encoder.getPosition() - target));
                 motor_arm.set(rotate_to.calculate(arm_encoder.getPosition(), target));
-            }
-            ;
+            };
             motor_arm.setIdleMode(IdleMode.kBrake);
             motor_arm.set(0);
         };
@@ -416,11 +405,10 @@ public class Robot extends TimedRobot {
 
     public void toggle_gripper(boolean toggle) {
         double motor_default_speed = 0.075;
-
         if (toggle == true) {
             motor_gripper.set(motor_default_speed);
         } else if (toggle == false) {
             motor_gripper.set(-motor_default_speed);
-        }
-    }
+        };
+    };
 };
