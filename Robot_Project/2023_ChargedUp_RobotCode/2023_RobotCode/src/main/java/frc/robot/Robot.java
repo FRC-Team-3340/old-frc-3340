@@ -89,7 +89,7 @@ public class Robot extends TimedRobot {
     private DifferentialDrive robot = new DifferentialDrive(left_tread, right_tread);
     
     // FINE-TUNE: Controls rotation speed to preset option.
-    private PIDController rotate_to = new PIDController(0.5, 0.5, 0.5);
+    private PIDController rotate_to = new PIDController(0.01, 0.01, 0.5);
 
     // LIMIT SWITCHES
     public DigitalInput reverse_switch = new DigitalInput(0);
@@ -97,7 +97,7 @@ public class Robot extends TimedRobot {
 
     // GLOBAL FOR SMART DASHBOARD.
     private double max_drivePower = 0.5; // Base maximum power for driving the robot
-    private double max_armPower = 0.25;
+    private double max_armPower = 0.05;
     private boolean limitSwitch_override = false; // IF LIMIT SWITCH BREAKS, SET TO TRUE ON SMARTDASHBOARD OR HERE.
 
     // Logging and debugging utilities
@@ -265,7 +265,7 @@ public class Robot extends TimedRobot {
 
         autobalance_robot(emulated_gyroscope.getY());
 
-        toggle_gripper(arm_joystick.getRawButton(1));
+        // toggle_gripper(arm_joystick.getRawButton(1));
     
     }
 
@@ -321,7 +321,7 @@ public class Robot extends TimedRobot {
             autobalance_robot(emulated_gyroscope.getY());
         }
 
-        toggle_gripper(arm_joystick.getRawButton(1));
+        // toggle_gripper(arm_joystick.getRawButton(1));
 
     }
 
@@ -403,6 +403,7 @@ public class Robot extends TimedRobot {
         } else if (isPreset == true) {
             motor_arm.setIdleMode(IdleMode.kCoast);
             while (Math.abs(arm_encoder.getPosition() - target) > 0.5) {
+                // if 
                 motor_arm.set(rotate_to.calculate(arm_encoder.getPosition(), target) * max_armPower);
             };
             motor_arm.setIdleMode(IdleMode.kBrake);
