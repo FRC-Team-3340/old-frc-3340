@@ -163,7 +163,7 @@ public class Robot extends TimedRobot {
         motor_gripper.restoreFactoryDefaults();
 
         motor_gripper.setIdleMode(IdleMode.kBrake);
-        motor_gripper.setSoftLimit(SoftLimitDirection.kReverse, -40);
+        motor_gripper.setSoftLimit(SoftLimitDirection.kReverse, -10);
     }
 
     /**
@@ -326,7 +326,7 @@ public class Robot extends TimedRobot {
             autobalance_robot(emulated_gyroscope.getY());
         }
 
-        // toggle_gripper(arm_joystick.getRawButton(1));
+        toggle_gripper(arm_joystick.getRawButton(1));
 
     }
 
