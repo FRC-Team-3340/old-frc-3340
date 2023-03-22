@@ -158,7 +158,6 @@ public class Robot extends TimedRobot {
         SmartDashboard.putData("PID", rotate_to);
         SmartDashboard.putNumber("Arm Position (Encoder)", arm_encoder.getPosition());
         SmartDashboard.putNumber("Gripper Position (Encoder)", gripper_encoder.getPosition());
-        SmartDashboard.putNumber("Maximum Drive Power", max_drivePower);
         SmartDashboard.putNumber("Maximum Arm Power", max_armPower);
 
         toggle_limit_switch.set(limitSwitch_override);
