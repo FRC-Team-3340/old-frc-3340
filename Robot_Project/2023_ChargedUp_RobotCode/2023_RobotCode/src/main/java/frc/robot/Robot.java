@@ -105,12 +105,20 @@ public class Robot extends TimedRobot {
     private double max_drivePower = 0.5; // Base maximum power for driving the robot
     private double max_armPower = 0.05;
     private boolean limitSwitch_override = false; // IF LIMIT SWITCH BREAKS, SET TO TRUE ON SMARTDASHBOARD OR HERE.
-
+    
+    // Autobalance Smart Dashboard compatibility
+    public double maxAngle = 15.0;
+    public double minAngle = 2.5;
+    public double maximum_power = 0.35;
+    
     // Logging and debugging utilities
     public NetworkTableInstance inst = NetworkTableInstance.getDefault();
     public NetworkTable stats_table = inst.getTable("SmartDashboard");
     public BooleanPublisher toggle_limit_switch = stats_table.getBooleanTopic("Disable Limit Switches").publish();
     public DoublePublisher drivePower = stats_table.getDoubleTopic("Drive Power").publish();
+    public DoublePublisher ab_maxAngle = stats_table.getDoubleTopic("Autobalance - Maximum Angle").publish();
+    public DoublePublisher ab_minAngle = stats_table.getDoubleTopic("Autobalance - Minimum Angle").publish();
+    public DoublePublisher ab_maxPower = stats_table.getDoubleTopic("Autobalance - Maximum Power").publish();
 
     public double autobalance_power;
     public int lastPressed = 0;
@@ -163,7 +171,9 @@ public class Robot extends TimedRobot {
 
         toggle_limit_switch.set(limitSwitch_override);
         drivePower.set(max_drivePower * 100);
-
+        ab_maxAngle.set(maxAngle);
+        ab_minAngle.set(minAngle);
+        ab_maxPower.set(maximum_power * 100);
         // Initialize robot arm and gripper
         motor_arm.restoreFactoryDefaults();
         motor_gripper.restoreFactoryDefaults();
@@ -336,11 +346,6 @@ public class Robot extends TimedRobot {
     }
 
     public double autobalance_robot(double source) {
-        // YOU CAN CHANGE
-        double maxAngle = 15.0;
-        double minAngle = 2.5;
-        double maximum_power = 0.35;
-        
         // DO NOT CHANGE
         double autobalanceAxis = source;
         double output_power = 0;
