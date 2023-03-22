@@ -2,6 +2,12 @@
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 
+/*
+ * Noticed you had a lot of semi-collons after your if and while statements
+ * Delete them
+ * Also some lines can be shortened to aid in readability Ex. 261, 263, 265
+ * Might also wanna shorten the excessive comment code or seperate it better
+ */
 package frc.robot;
 
 // WPILib Imports
@@ -226,8 +232,8 @@ public class Robot extends TimedRobot {
                         System.out.println("Robot is balanced :)");
                         balanced = true;
                         break;
-                    };
-                }; //Why these alone? =(
+                    }; //Pretty sure the semi-collons after if and while statements don't serve a purpose here
+                }; // and here =)
             case kDefaultAuto:
             default:
 
@@ -375,11 +381,11 @@ public class Robot extends TimedRobot {
             output_power = (maximum_power/1.25 * ((autobalanceAxis + minAngle) / (-maxAngle + minAngle)));
         } else {
             output_power = 0;
-        };
+        }; //Random semi-collon
 
         ab_publisher.set(autobalance_power); // display this in network tables for debugging
         return output_power;
-    };
+    }; //Random semi-collon
 
     public void move_robot_arm(boolean isPreset, double input, double target) {
         if (isPreset == false) {

@@ -1,8 +1,5 @@
 {
   "NetworkTables": {
-    "Transitory Values": {
-      "open": false
-    },
     "transitory": {
       "LiveWindow": {
         ".status": {
@@ -31,7 +28,8 @@
       "/LiveWindow/Ungrouped/DigitalInput[1]": "Digital Input",
       "/LiveWindow/Ungrouped/PIDController[1]": "PIDController",
       "/LiveWindow/Ungrouped/navX-Sensor[4]": "Gyro",
-      "/SmartDashboard/Auto choices": "String Chooser"
+      "/SmartDashboard/Auto choices": "String Chooser",
+      "/SmartDashboard/PID": "PIDController"
     }
   },
   "NetworkTables Info": {
