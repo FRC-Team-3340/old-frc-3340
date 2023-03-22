@@ -3,8 +3,6 @@
 // the WPILib BSD license file in the root directory of this project.
 
 /*
- * Noticed you had a lot of semi-collons after your if and while statements
- * Delete them
  * Also some lines can be shortened to aid in readability Ex. 261, 263, 265
  * Might also wanna shorten the excessive comment code or seperate it better
  */
@@ -22,11 +20,13 @@ import edu.wpi.first.wpilibj.drive.DifferentialDrive;                 // To use 
 import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;       // Conjoins two motors as one
 import edu.wpi.first.wpilibj.DigitalInput;                            // Limit Switch interface for the robot's arm
 import edu.wpi.first.wpilibj.Joystick;                                // Joystick interface for controlling the robot
+import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.math.controller.PIDController;
 
 // Network Table
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.BooleanPublisher;
 import edu.wpi.first.networktables.DoublePublisher;
 
 // Imports for sensors, motors, and inputs - comment what each import is for
@@ -109,10 +109,8 @@ public class Robot extends TimedRobot {
     // Logging and debugging utilities
     public NetworkTableInstance inst = NetworkTableInstance.getDefault();
     public NetworkTable stats_table = inst.getTable("SmartDashboard");
-    public DoublePublisher ab_publisher;
-    public DoublePublisher gyroRoll_output;
-    public DoublePublisher ArmEncoderOutput;
-    public DoublePublisher GripperOutput;
+    public BooleanPublisher toggle_limit_switch = stats_table.getBooleanTopic("Disable Limit Switches").publish();
+
     public double autobalance_power;
     public int lastPressed = 0;
 
@@ -155,14 +153,15 @@ public class Robot extends TimedRobot {
         m_chooser.setDefaultOption("Default Auto", kDefaultAuto);
         m_chooser.addOption("My Auto", kCustomAuto);
         m_chooser.addOption("Autobalance", kAutobalance);
-        SmartDashboard.putData("Auto choices", m_chooser);
 
+        SmartDashboard.putData("Auto choices", m_chooser);
         SmartDashboard.putData("PID", rotate_to);
         SmartDashboard.putNumber("Arm Position (Encoder)", arm_encoder.getPosition());
         SmartDashboard.putNumber("Gripper Position (Encoder)", gripper_encoder.getPosition());
         SmartDashboard.putNumber("Maximum Drive Power", max_drivePower);
-        SmartDashboard.putNumber("Maximum Arm P]ower", max_armPower);
-        SmartDashboard.putBoolean("Disable Limit Switches", limitSwitch_override);
+        SmartDashboard.putNumber("Maximum Arm Power", max_armPower);
+
+        toggle_limit_switch.set(limitSwitch_override);
 
         // Initialize robot arm and gripper
         motor_arm.restoreFactoryDefaults();
@@ -170,38 +169,17 @@ public class Robot extends TimedRobot {
 
         motor_gripper.setIdleMode(IdleMode.kBrake);
         motor_gripper.setSoftLimit(SoftLimitDirection.kReverse, -10);
-    }
+        
 
-    /**
-     * This function is called every 20 ms, no matter the mode. Use this for items
-     * like diagnostics
-     * that you want ran during disabled, autonomous, teleoperated and test.
-     * <p>
-     * SmartDashboard integrated updating.
-     */
+        
+
+        CameraServer.startAutomaticCapture();
+    }
 
     @Override
     public void robotPeriodic() {
 
     }
-
-    /**
-     * This autonomous (along with the chooser code above) shows how to select
-     * between different
-     * autonomous modes using the dashboard. The sendable chooser code works with
-     * the Java
-     * SmartDashboard. If you prefer the LabVIEW Dashboard, remove all of the
-     * chooser code and
-     * uncomment the getString line to get the auto name from the text box below the
-     *
-     * <p>
-     * You can add additional auto modes by adding additional comparisons to the
-     * switch structure
-     * below with additional strings. If using the SendableChooser make sure to add
-     * them to the
-     * chooser code above as well.
-     */
-
     @Override
     public void autonomousInit() {
         m_autoSelected = m_chooser.getSelected();
@@ -232,8 +210,8 @@ public class Robot extends TimedRobot {
                         System.out.println("Robot is balanced :)");
                         balanced = true;
                         break;
-                    }; //Pretty sure the semi-collons after if and while statements don't serve a purpose here
-                }; // and here =)
+                    } 
+                } 
             case kDefaultAuto:
             default:
 
@@ -258,13 +236,11 @@ public class Robot extends TimedRobot {
         limitSwitch_override = SmartDashboard.getBoolean("Forward Limit Enabled", false);
 
         // Driving the robot, allowing support for twisting and moving stick left and right.
-        if (Math.abs(robot_joystick.getX()) > Math.abs(robot_joystick.getZ())){
-            move_robot(robot_joystick.getY(), robot_joystick.getX(), robot_joystick.getRawAxis(3), true);
-        } else if (Math.abs(robot_joystick.getX()) < Math.abs(robot_joystick.getZ())) {
+        if (Math.abs(robot_joystick.getX()) < Math.abs(robot_joystick.getZ())){
             move_robot(robot_joystick.getY(), robot_joystick.getZ(), robot_joystick.getRawAxis(3), true);
         } else {
             move_robot(robot_joystick.getY(), robot_joystick.getX(), robot_joystick.getRawAxis(3), true);
-        } 
+        }   
         
         if (Math.abs(arm_joystick.getY()) > 0.1) {
             move_robot_arm(false, arm_joystick.getY(), 0);
@@ -278,7 +254,7 @@ public class Robot extends TimedRobot {
             move_robot_arm(false, 0, 0);
         }
 
-        // toggle_gripper(arm_joystick.getRawButton(1));
+        toggle_gripper(arm_joystick.getRawButton(1));
     }
 
     /**
@@ -287,9 +263,6 @@ public class Robot extends TimedRobot {
     @Override
     public void disabledInit() {
         motor_gripper.enableSoftLimit(SoftLimitDirection.kReverse, false);
-        ab_publisher = stats_table.getDoubleTopic("Autobalance Power").publish();
-        ArmEncoderOutput = stats_table.getDoubleTopic("Arm Motor Rotations").publish();
-        GripperOutput = stats_table.getDoubleTopic("Gripper Encoder").publish();
     }
 
     /**
@@ -381,27 +354,13 @@ public class Robot extends TimedRobot {
             output_power = (maximum_power/1.25 * ((autobalanceAxis + minAngle) / (-maxAngle + minAngle)));
         } else {
             output_power = 0;
-        }; //Random semi-collon
+        }
 
-        ab_publisher.set(autobalance_power); // display this in network tables for debugging
         return output_power;
-    }; //Random semi-collon
+    }
 
     public void move_robot_arm(boolean isPreset, double input, double target) {
         if (isPreset == false) {
-        /* Breaking down the (if) statement:
-          -> &&, ||
-              * Boolean operators for and/or. && = and, || == or
-          -> input > 0.1, input < -0.1
-              * This acts as a deadzone for analog control of the robot's arm. 
-              * The arm activates upon passing this threshold. 
-          -> forwards_switch.get(), reverse_switch.get()
-              * This gets a Boolean from the limit switch for when the arm reaches its forwards or reverse limit.
-              * The arm moves up when the motor is going in reverse. The arm moves down when the motor is going forwards.
-          -> limitSwitch_override == true
-              * In the event any of the limit switches short in competiton and report only one value, this will force the
-                motor to continue functioning instead of seizing because of a broken limit switch.
-         */
             if (input > 0.1 /*Deadzone*/ && (forwards_switch.get() == false /*Limit Switch Not Pressed*/ || limitSwitch_override == true /*Limit Switches Disabled*/)) {
                 motor_arm.set(arm_joystick.getY() * max_armPower);
             } else if (input < -0.1 && (reverse_switch.get() == false || limitSwitch_override == true)) {
@@ -410,7 +369,7 @@ public class Robot extends TimedRobot {
                 motor_arm.set(0.0);
             } else {
                 motor_arm.set(0.0);
-            };
+            }
 
         } else if (isPreset == true) {
             motor_arm.setIdleMode(IdleMode.kCoast);
@@ -420,12 +379,12 @@ public class Robot extends TimedRobot {
                     motor_arm.set(max_armPower);
                 } else {
                     motor_arm.set(rotate_to.calculate(arm_encoder.getPosition(), target) * max_armPower);
-                };
-            };
+                }
+            }
             motor_arm.setIdleMode(IdleMode.kBrake);
             motor_arm.set(0);
-        };
-    };
+        }
+    }
 
     public void toggle_gripper(boolean toggle) {
         double motor_default_speed = 0.075;
@@ -433,6 +392,6 @@ public class Robot extends TimedRobot {
             motor_gripper.set(motor_default_speed);
         } else if (toggle == false) {
             motor_gripper.set(-motor_default_speed);
-        };
-    };
+        }
+    }
 };
