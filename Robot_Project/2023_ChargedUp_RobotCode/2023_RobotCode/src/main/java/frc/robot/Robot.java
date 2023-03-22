@@ -110,6 +110,7 @@ public class Robot extends TimedRobot {
     public NetworkTableInstance inst = NetworkTableInstance.getDefault();
     public NetworkTable stats_table = inst.getTable("SmartDashboard");
     public BooleanPublisher toggle_limit_switch = stats_table.getBooleanTopic("Disable Limit Switches").publish();
+    public DoublePublisher drivePower = stats_table.getDoubleTopic("Drive Power").publish();
 
     public double autobalance_power;
     public int lastPressed = 0;
@@ -161,6 +162,7 @@ public class Robot extends TimedRobot {
         SmartDashboard.putNumber("Maximum Arm Power", max_armPower);
 
         toggle_limit_switch.set(limitSwitch_override);
+        drivePower.set(max_drivePower * 100);
 
         // Initialize robot arm and gripper
         motor_arm.restoreFactoryDefaults();
