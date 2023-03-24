@@ -23,8 +23,13 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.networktables.DoublePublisher;
 
 // Imports for sensors, motors, and inputs - comment what each import is for
+<<<<<<< HEAD
 import com.kauailabs.navx.frc.AHRS; // navX-MXP inertial mass unit, has three-axis gyro and accelerometer
 import com.revrobotics.CANSparkMax; // Spark MAX controller, CAN port on the roboRIO; controls motors
+=======
+import com.kauailabs.navx.frc.AHRS; // navX-MXP IMU that has a useful gyroscope
+import com.revrobotics.CANSparkMax; // Spark MAX motor controller
+>>>>>>> parent of 84c9111 (Update Robot.java)
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkMaxLimitSwitch;
 import com.revrobotics.CANSparkMax.IdleMode;
@@ -116,6 +121,7 @@ public class Robot extends TimedRobot {
    * --> returns a double
    */
 
+<<<<<<< HEAD
   public SparkMaxLimitSwitch armLS_forward;
   public SparkMaxLimitSwitch armLS_reverse;
 
@@ -124,6 +130,27 @@ public class Robot extends TimedRobot {
    * for any
    * initialization code.
    */
+=======
+    // GLOBAL FOR SMART DASHBOARD.
+    private double max_drivePower = 0.5; // Base maximum power for driving the robot
+    private double max_armPower = 0.05;
+    private boolean limitSwitch_override = false; // IF LIMIT SWITCH BREAKS, SET TO TRUE ON SMARTDASHBOARD OR HERE.
+    
+    // Autobalance Smart Dashboard compatibility
+    public double maxAngle = 15.0;
+    public double minAngle = 2.5;
+    public double maximum_power = 0.35;
+    
+    // Logging and debugging utilities
+    public NetworkTableInstance inst = NetworkTableInstance.getDefault();
+    public NetworkTable stats_table = inst.getTable("SmartDashboard");
+    public BooleanPublisher toggle_limit_switch = stats_table.getBooleanTopic("Disable Limit Switches").publish();
+    public DoublePublisher drivePower = stats_table.getDoubleTopic("Drive Power").publish();
+    public DoublePublisher ab_maxAngle = stats_table.getDoubleTopic("Autobalance - Maximum Angle").publish();
+    public DoublePublisher ab_minAngle = stats_table.getDoubleTopic("Autobalance - Minimum Angle").publish();
+    public DoublePublisher ab_maxPower = stats_table.getDoubleTopic("Autobalance - Maximum Power").publish();
+    public DoublePublisher ab_axisMeausre = stats_table.getDoubleTopic("Gyroscope Axis (Autobalance)").publish();
+>>>>>>> parent of 84c9111 (Update Robot.java)
 
   @Override
   public void robotInit() {
@@ -186,6 +213,7 @@ public class Robot extends TimedRobot {
     System.out.println("Auto selected: " + m_autoSelected);
   }
 
+<<<<<<< HEAD
   /** This function is called periodically during autonomous. */
   @Override
   public void autonomousPeriodic() {
@@ -208,6 +236,55 @@ public class Robot extends TimedRobot {
             break;
           }
           ; // Stop it!
+=======
+        CameraServer.startAutomaticCapture();
+    }
+
+    @Override
+    public void robotPeriodic() {
+
+    }
+    @Override
+    public void autonomousInit() {
+        m_autoSelected = m_chooser.getSelected();
+        navX_gyro.calibrate();
+        // m_autoSelected = SmartDashboard.getString("Auto Selector", kDefaultAuto);
+        System.out.println("Auto selected: " + m_autoSelected);
+    }
+
+    /**
+     * This function is called periodically during autonomous.
+     */
+    @Override
+    public void autonomousPeriodic() {
+        switch (m_autoSelected) {
+            case kCustomAuto:
+                // Put custom auto code here
+                break;
+            case kAutobalance:
+                boolean balanced = false;
+                float time_balanced = 0;
+                while (Math.abs(navX_gyro.getRoll()) < 2.5) {
+                    move_robot(.2, 0, 1, false); 
+                }
+                while (balanced == false) {
+                    autobalance_power = autobalance_robot(navX_gyro.getRoll());
+                    move_robot(autobalance_power, 0, 1, false);
+                    if (autobalance_power == 0) {
+                        time_balanced++;
+                    }
+                    if (time_balanced == 10000) {
+                        System.out.println("Robot is balanced :)");
+                        balanced = true;
+                        break;
+                    } 
+                } 
+                break;
+            case kDefaultAuto:
+            default:
+
+                break;
+>>>>>>> parent of 84c9111 (Update Robot.java)
         }
         ;
       case kDefaultAuto:
