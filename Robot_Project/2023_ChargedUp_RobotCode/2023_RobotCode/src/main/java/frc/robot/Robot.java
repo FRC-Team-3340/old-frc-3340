@@ -119,6 +119,7 @@ public class Robot extends TimedRobot {
     public DoublePublisher ab_maxAngle = stats_table.getDoubleTopic("Autobalance - Maximum Angle").publish();
     public DoublePublisher ab_minAngle = stats_table.getDoubleTopic("Autobalance - Minimum Angle").publish();
     public DoublePublisher ab_maxPower = stats_table.getDoubleTopic("Autobalance - Maximum Power").publish();
+    public DoublePublisher ab_axisMeausre = stats_table.getDoubleTopic("Gyroscope Axis (Autobalance)").publish();
 
     public double autobalance_power;
     public int lastPressed = 0;
@@ -167,22 +168,21 @@ public class Robot extends TimedRobot {
         SmartDashboard.putData("PID", rotate_to);
         SmartDashboard.putNumber("Arm Position (Encoder)", arm_encoder.getPosition());
         SmartDashboard.putNumber("Gripper Position (Encoder)", gripper_encoder.getPosition());
-        SmartDashboard.putNumber("Maximum Arm Power", max_armPower);
 
         toggle_limit_switch.set(limitSwitch_override);
         drivePower.set(max_drivePower * 100);
         ab_maxAngle.set(maxAngle);
         ab_minAngle.set(minAngle);
         ab_maxPower.set(maximum_power * 100);
+        ab_axisMeausre.set(navX_gyro.getRoll());
+
+
         // Initialize robot arm and gripper
         motor_arm.restoreFactoryDefaults();
         motor_gripper.restoreFactoryDefaults();
 
         motor_gripper.setIdleMode(IdleMode.kBrake);
         motor_gripper.setSoftLimit(SoftLimitDirection.kReverse, -10);
-        
-
-        
 
         CameraServer.startAutomaticCapture();
     }
@@ -211,6 +211,9 @@ public class Robot extends TimedRobot {
             case kAutobalance:
                 boolean balanced = false;
                 float time_balanced = 0;
+                while (Math.abs(navX_gyro.getRoll()) < 2.5) {
+                    move_robot(.2, 0, 1, false); 
+                }
                 while (balanced == false) {
                     autobalance_power = autobalance_robot(navX_gyro.getRoll());
                     move_robot(autobalance_power, 0, 1, false);
@@ -223,6 +226,7 @@ public class Robot extends TimedRobot {
                         break;
                     } 
                 } 
+                break;
             case kDefaultAuto:
             default:
 
@@ -400,4 +404,4 @@ public class Robot extends TimedRobot {
             motor_gripper.set(-motor_default_speed);
         }
     }
-};
+}
