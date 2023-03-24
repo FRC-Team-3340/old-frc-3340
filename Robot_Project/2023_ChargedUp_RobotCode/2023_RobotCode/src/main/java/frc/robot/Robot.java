@@ -32,6 +32,7 @@ import edu.wpi.first.networktables.DoublePublisher;
 // Imports for sensors, motors, and inputs - comment what each import is for
 import com.kauailabs.navx.frc.AHRS; // navX-MXP IMU that has a useful gyroscope
 import com.revrobotics.CANSparkMax; // Spark MAX motor controller
+import edu.wpi.first.wpilibj.Servo  ;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMax.SoftLimitDirection;
@@ -100,6 +101,9 @@ public class Robot extends TimedRobot {
     // LIMIT SWITCHES
     public DigitalInput reverse_switch = new DigitalInput(0);
     public DigitalInput forwards_switch = new DigitalInput(1);
+
+    // SERVO
+    public Servo gripperServo = new Servo(0);
 
     // GLOBAL FOR SMART DASHBOARD.
     private double max_drivePower = 0.5; // Base maximum power for driving the robot
@@ -195,6 +199,7 @@ public class Robot extends TimedRobot {
     public void autonomousInit() {
         m_autoSelected = m_chooser.getSelected();
         navX_gyro.calibrate();
+        gripperServo.close();
         // m_autoSelected = SmartDashboard.getString("Auto Selector", kDefaultAuto);
         System.out.println("Auto selected: " + m_autoSelected);
     }
@@ -229,7 +234,16 @@ public class Robot extends TimedRobot {
                 break;
             case kDefaultAuto:
             default:
+                RelativeEncoder drive_encoder = motorL_front.getEncoder();
+                double starting_distance = drive_encoder.getPosition();
 
+                while (drive_encoder.getPosition() < starting_distance + 1000) {
+                    move_robot(1, 0, .25, false);
+                }
+                starting_distance = drive_encoder.getPosition();
+                while (drive_encoder.getPosition() < starting_distance - 4000) {
+                    move_robot(-1, 0, .25, false); 
+                }
                 break;
         }
     }
