@@ -241,7 +241,7 @@ public class Robot extends TimedRobot {
                     move_robot(1, 0, .25, false);
                 }
                 starting_distance = drive_encoder.getPosition();
-                while (drive_encoder.getPosition() < starting_distance - 4000) {
+                while (drive_encoder.getPosition() < starting_distance - 2000) {
                     move_robot(-1, 0, .25, false); 
                 }
                 break;
