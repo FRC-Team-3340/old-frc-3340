@@ -106,7 +106,7 @@ public class Robot extends TimedRobot {
 
     // GLOBAL FOR SMART DASHBOARD.
     private double max_drivePower = 0.5; // Base maximum power for driving the robot
-    private double max_armPower = 0.15;
+    private double max_armPower = 0.2;
     private double gripperPower = 0.1;
     private boolean limitSwitch_override = false; // IF LIMIT SWITCH BREAKS, SET TO TRUE ON SMARTDASHBOARD OR HERE.
     
@@ -410,11 +410,21 @@ public class Robot extends TimedRobot {
 
     public void toggle_gripper(boolean close, boolean open) {
         if (close == true && open == false) {
+            try{
+                Thread.sleep(100);
+            } catch (InterruptedException ex){
+                ex.printStackTrace();
+            }
             motor_gripper.set(gripperPower);
         } else if (open == true && close == false) {
+            try{
+                Thread.sleep(100);
+            } catch (InterruptedException ex){
+                ex.printStackTrace();
+            }
             motor_gripper.set(-gripperPower);
         } else {
-          motor_gripper.set(0);
+          /*motor_gripper.set(0);*/
         }
     }
 }
