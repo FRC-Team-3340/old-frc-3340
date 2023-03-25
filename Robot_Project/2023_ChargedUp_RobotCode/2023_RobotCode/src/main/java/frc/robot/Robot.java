@@ -107,7 +107,8 @@ public class Robot extends TimedRobot {
 
     // GLOBAL FOR SMART DASHBOARD.
     private double max_drivePower = 0.5; // Base maximum power for driving the robot
-    private double max_armPower = 0.05;
+    private double max_armPower = 0.075;
+    private double gripperPower = 0.075;
     private boolean limitSwitch_override = false; // IF LIMIT SWITCH BREAKS, SET TO TRUE ON SMARTDASHBOARD OR HERE.
     
     // Autobalance Smart Dashboard compatibility
@@ -119,8 +120,10 @@ public class Robot extends TimedRobot {
     public NetworkTableInstance inst = NetworkTableInstance.getDefault();
     public NetworkTable stats_table = inst.getTable("SmartDashboard");
     public BooleanPublisher toggle_limit_switch = stats_table.getBooleanTopic("Disable Limit Switches").publish();
+    public DoublePublisher armPower = stats_table.getDoubleTopic("Arm Power").publish();
     public DoublePublisher drivePower = stats_table.getDoubleTopic("Drive Power").publish();
     public DoublePublisher ab_maxAngle = stats_table.getDoubleTopic("Autobalance - Maximum Angle").publish();
+    public DoublePublisher gripperPublisher = stats_table.getDoubleTopic("Gripper Power").publish();
     public DoublePublisher ab_minAngle = stats_table.getDoubleTopic("Autobalance - Minimum Angle").publish();
     public DoublePublisher ab_maxPower = stats_table.getDoubleTopic("Autobalance - Maximum Power").publish();
     public DoublePublisher ab_axisMeausre = stats_table.getDoubleTopic("Gyroscope Axis (Autobalance)").publish();
@@ -174,10 +177,12 @@ public class Robot extends TimedRobot {
         SmartDashboard.putNumber("Gripper Position (Encoder)", gripper_encoder.getPosition());
 
         toggle_limit_switch.set(limitSwitch_override);
-        drivePower.set(max_drivePower * 100);
+        drivePower.set(max_drivePower);
         ab_maxAngle.set(maxAngle);
         ab_minAngle.set(minAngle);
-        ab_maxPower.set(maximum_power * 100);
+        gripperPublisher.set(gripperPower);
+        armPower.set(max_armPower);
+        ab_maxPower.set(maximum_power);
         ab_axisMeausre.set(navX_gyro.getRoll());
 
 
@@ -185,8 +190,9 @@ public class Robot extends TimedRobot {
         motor_arm.restoreFactoryDefaults();
         motor_gripper.restoreFactoryDefaults();
 
-        motor_gripper.setIdleMode(IdleMode.kBrake);
-        motor_gripper.setSoftLimit(SoftLimitDirection.kReverse, -10);
+        
+        // motor_gripper.setIdleMode(IdleMode.kCoast);
+        // motor_gripper.setSoftLimit(SoftLimitDirection.kReverse, -25);
 
         CameraServer.startAutomaticCapture();
     }
@@ -237,11 +243,11 @@ public class Robot extends TimedRobot {
                 RelativeEncoder drive_encoder = motorL_front.getEncoder();
                 double starting_distance = drive_encoder.getPosition();
 
-                while (drive_encoder.getPosition() < starting_distance + 1000) {
+                while (drive_encoder.getPosition() < starting_distance + 100) {
                     move_robot(1, 0, .25, false);
                 }
                 starting_distance = drive_encoder.getPosition();
-                while (drive_encoder.getPosition() < starting_distance - 2000) {
+                while (drive_encoder.getPosition() > starting_distance - 200) {
                     move_robot(-1, 0, .25, false); 
                 }
                 break;
@@ -254,7 +260,7 @@ public class Robot extends TimedRobot {
     @Override
     public void teleopInit() {
         gripper_encoder.setPosition(0);
-        motor_gripper.enableSoftLimit(SoftLimitDirection.kReverse, true);
+        // motor_gripper.enableSoftLimit(SoftLimitDirection.kReverse, true);
     }
 
     /**
@@ -390,7 +396,7 @@ public class Robot extends TimedRobot {
             } else if (input < -0.1 && (reverse_switch.get() == false || limitSwitch_override == true)) {
                 motor_arm.set(arm_joystick.getY() * max_armPower);
             } else if ((reverse_switch.get() == true || forwards_switch.get() == true) && limitSwitch_override == false) {
-                motor_arm.set(0.0);
+                motor_arm.set(0.0); 
             } else {
                 motor_arm.set(0.0);
             }
@@ -411,11 +417,11 @@ public class Robot extends TimedRobot {
     }
 
     public void toggle_gripper(boolean toggle) {
-        double motor_default_speed = 0.075;
+
         if (toggle == true) {
-            motor_gripper.set(motor_default_speed);
+            motor_gripper.set(gripperPower);
         } else if (toggle == false) {
-            motor_gripper.set(-motor_default_speed);
+            motor_gripper.set(-gripperPower);
         }
     }
 }
