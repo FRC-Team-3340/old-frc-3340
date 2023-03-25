@@ -290,7 +290,7 @@ public class Robot extends TimedRobot {
             move_robot_arm(false, 0, 0);
         }
 
-        toggle_gripper(arm_joystick.getRawButton(1));
+        toggle_gripper(arm_joystick.getRawButton(1), arm_joystick.getRawButton(2));
     }
 
     /**
@@ -341,7 +341,6 @@ public class Robot extends TimedRobot {
             autobalance_robot(emulated_gyroscope.getY());
         }
 
-        toggle_gripper(arm_joystick.getRawButton(1));
 
     }
 
@@ -416,12 +415,13 @@ public class Robot extends TimedRobot {
         }
     }
 
-    public void toggle_gripper(boolean toggle) {
-
-        if (toggle == true) {
+    public void toggle_gripper(boolean close, boolean open) {
+        if (close == true && open == false) {
             motor_gripper.set(gripperPower);
-        } else if (toggle == false) {
+        } else if (open == true && close == false) {
             motor_gripper.set(-gripperPower);
+        } else {
+          motor_gripper.set(0);
         }
     }
 }
