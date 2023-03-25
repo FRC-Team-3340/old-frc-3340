@@ -218,7 +218,7 @@ public class Robot extends TimedRobot {
                 boolean balanced = false;
                 float time_balanced = 0;
                 while (Math.abs(navX_gyro.getRoll()) < 2.5) {
-                    move_robot(.2, 0, 1, false); 
+                move_robot(-.2, 0, 1, false); 
                 }
                 while (balanced == false) {
                     autobalance_power = autobalance_robot(navX_gyro.getRoll());
