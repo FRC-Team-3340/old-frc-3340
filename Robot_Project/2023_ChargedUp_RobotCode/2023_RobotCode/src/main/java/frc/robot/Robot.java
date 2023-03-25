@@ -424,7 +424,7 @@ public class Robot extends TimedRobot {
             }
             motor_gripper.set(-gripperPower);
         } else {
-          /*motor_gripper.set(0);*/
+          motor_gripper.set(0);
         }
     }
 }
