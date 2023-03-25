@@ -105,7 +105,7 @@ public class Robot extends TimedRobot {
     public Servo gripperServo = new Servo(0);
 
     // GLOBAL FOR SMART DASHBOARD.
-    private double max_drivePower = 0.5; // Base maximum power for driving the robot
+    private double max_drivePower = 1; // Base maximum power for driving the robot
     private double max_armPower = 0.2;
     private double gripperPower = 0.1;
     private boolean limitSwitch_override = false; // IF LIMIT SWITCH BREAKS, SET TO TRUE ON SMARTDASHBOARD OR HERE.
@@ -217,7 +217,7 @@ public class Robot extends TimedRobot {
             case kAutobalance:
                 boolean balanced = false;
                 float time_balanced = 0;
-                while (Math.abs(navX_gyro.getRoll()) < 2.5) {
+                while (Math.abs(navX_gyro.getRoll ()) < 2.5) {
                 move_robot(-.2, 0, 1, false); 
                 }
                 while (balanced == false) {
