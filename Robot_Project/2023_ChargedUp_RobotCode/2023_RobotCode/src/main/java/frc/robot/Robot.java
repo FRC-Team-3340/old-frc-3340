@@ -26,6 +26,7 @@ import edu.wpi.first.math.controller.PIDController;
 // Network Table
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.networktables.BooleanPublisher;
 import edu.wpi.first.networktables.DoublePublisher;
 
@@ -107,8 +108,8 @@ public class Robot extends TimedRobot {
 
     // GLOBAL FOR SMART DASHBOARD.
     private double max_drivePower = 0.5; // Base maximum power for driving the robot
-    private double max_armPower = 0.075;
-    private double gripperPower = 0.075;
+    private double max_armPower = 0.15;
+    private double gripperPower = 0.1;
     private boolean limitSwitch_override = false; // IF LIMIT SWITCH BREAKS, SET TO TRUE ON SMARTDASHBOARD OR HERE.
     
     // Autobalance Smart Dashboard compatibility
@@ -297,7 +298,7 @@ public class Robot extends TimedRobot {
      */
     @Override
     public void disabledInit() {
-        motor_gripper.enableSoftLimit(SoftLimitDirection.kReverse, false);
+        // motor_gripper.enableSoftLimit(SoftLimitDirection.kReverse, false);
     }
 
     /**
@@ -305,7 +306,6 @@ public class Robot extends TimedRobot {
      */
     @Override
     public void disabledPeriodic() {
-        motor_gripper.set(0.05);
     }
 
     /**
@@ -398,7 +398,7 @@ public class Robot extends TimedRobot {
             } else if ((reverse_switch.get() == true || forwards_switch.get() == true) && limitSwitch_override == false) {
                 motor_arm.set(0.0); 
             } else {
-                motor_arm.set(0.0);
+                motor_arm.set(0.05);
             }
 
         } else if (isPreset == true) {
