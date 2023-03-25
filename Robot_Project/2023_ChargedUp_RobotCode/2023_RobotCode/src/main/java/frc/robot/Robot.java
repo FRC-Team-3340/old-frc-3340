@@ -26,7 +26,6 @@ import edu.wpi.first.math.controller.PIDController;
 // Network Table
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.networktables.BooleanPublisher;
 import edu.wpi.first.networktables.DoublePublisher;
 
@@ -36,7 +35,6 @@ import com.revrobotics.CANSparkMax; // Spark MAX motor controller
 import edu.wpi.first.wpilibj.Servo  ;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.CANSparkMax.IdleMode;
-import com.revrobotics.CANSparkMax.SoftLimitDirection;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType; // Initializes motor types of the Spark MAX motors.
 
 /**
@@ -191,10 +189,6 @@ public class Robot extends TimedRobot {
         motor_arm.restoreFactoryDefaults();
         motor_gripper.restoreFactoryDefaults();
 
-        
-        // motor_gripper.setIdleMode(IdleMode.kCoast);
-        // motor_gripper.setSoftLimit(SoftLimitDirection.kReverse, -25);
-
         CameraServer.startAutomaticCapture();
     }
 
@@ -261,7 +255,6 @@ public class Robot extends TimedRobot {
     @Override
     public void teleopInit() {
         gripper_encoder.setPosition(0);
-        // motor_gripper.enableSoftLimit(SoftLimitDirection.kReverse, true);
     }
 
     /**
@@ -298,7 +291,7 @@ public class Robot extends TimedRobot {
      */
     @Override
     public void disabledInit() {
-        // motor_gripper.enableSoftLimit(SoftLimitDirection.kReverse, false);
+
     }
 
     /**
