@@ -385,7 +385,7 @@ public class Robot extends TimedRobot {
         if (speed_isSliderInput == true) {
             speed = max_drivePower * (Math.abs(speed - 1)) / 2;
         }
-        robot.arcadeDrive(forward * speed, turnRate * turn * speed); // Wilbert, Ryan
+        robot.arcadeDrive(forward * speed, drive_turnRate * turn * speed); // Wilbert, Ryan
     }
 
     public double autobalance_robot(double source) {
