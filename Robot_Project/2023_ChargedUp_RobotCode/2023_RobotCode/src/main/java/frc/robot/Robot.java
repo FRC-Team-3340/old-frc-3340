@@ -223,7 +223,7 @@ public class Robot extends TimedRobot {
     public void autonomousPeriodic() {
         switch (m_autoSelected) {
             case kCustomAuto:
-                // Put custom auto code here
+                // Put custom auto code here fff                                 
                 break;
             case kAutobalance:
                 boolean balanced = false;
