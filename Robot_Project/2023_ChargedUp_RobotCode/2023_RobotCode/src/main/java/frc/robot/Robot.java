@@ -85,7 +85,7 @@ public class Robot extends TimedRobot {
 
     public RelativeEncoder arm_encoder = motor_arm.getEncoder();
     public RelativeEncoder gripper_encoder = motor_gripper.getEncoder();
-
+    public RelativeEncoder drive_encoder;
 
     // Create objects for both motor pairs to act as one, don't tamper
     private final MotorControllerGroup left_tread = new MotorControllerGroup(motorL_front, motorL_rear);
@@ -105,9 +105,10 @@ public class Robot extends TimedRobot {
     public Servo gripperServo = new Servo(0);
 
     // GLOBAL FOR SMART DASHBOARD.
-    private double max_drivePower = 0.5; // Base maximum power for driving the robot
-    private double max_armPower = 0.2;
-    private double gripperPower = 0.1;
+    private double max_drivePower = 0.7; // Base maximum power for driving the robot
+    private double max_armPower = 0.3;
+    private double gripperPower = 0.08;
+    private double turnRate = 0.75;
     private boolean limitSwitch_override = false; // IF LIMIT SWITCH BREAKS, SET TO TRUE ON SMARTDASHBOARD OR HERE.
     
     // Autobalance Smart Dashboard compatibility
@@ -129,6 +130,9 @@ public class Robot extends TimedRobot {
 
     public double autobalance_power;
     public int lastPressed = 0;
+
+    public int autonState = 0;
+    public double autonStartingPostion = 0.0;
 
     /*
      * Important commands for getting user input:
@@ -203,7 +207,11 @@ public class Robot extends TimedRobot {
         gripperServo.close();
         // m_autoSelected = SmartDashboard.getString("Auto Selector", kDefaultAuto);
         System.out.println("Auto selected: " + m_autoSelected);
-    }
+        drive_encoder = motorL_front.getEncoder();
+        drive_encoder.setPosition(0);
+        autonState = 0;   
+        autonStartingPostion = drive_encoder.getPosition();
+     }
 
     /**
      * This function is called periodically during autonomous.
@@ -217,10 +225,10 @@ public class Robot extends TimedRobot {
             case kAutobalance:
                 boolean balanced = false;
                 float time_balanced = 0;
-                while (Math.abs(navX_gyro.getRoll()) < 2.5) {
+                if (Math.abs(navX_gyro.getRoll()) < 2.5) {
                     move_robot(.2, 0, 1, false); 
                 }
-                while (balanced == false) {
+                else if (balanced == false) {
                     autobalance_power = autobalance_robot(navX_gyro.getRoll());
                     move_robot(autobalance_power, 0, 1, false);
                     if (autobalance_power == 0) {
@@ -229,23 +237,34 @@ public class Robot extends TimedRobot {
                     if (time_balanced == 10000) {
                         System.out.println("Robot is balanced :)");
                         balanced = true;
-                        break;
+        
                     } 
                 } 
                 break;
             case kDefaultAuto:
             default:
-                RelativeEncoder drive_encoder = motorL_front.getEncoder();
-                double starting_distance = drive_encoder.getPosition();
+                
+                //double starting_distance = drive_encoder.getPosition();
+                
+                //14:1 6in wheel
+                if (autonState == 0 && drive_encoder.getPosition() > (42*6)*3.14 *18/14.0) {
+                    autonState++;
+                }
+                if (autonState == 1 && drive_encoder.getPosition() < (42*6)*3.14 *32/14.0) {
+                    autonState++;                    
+                }
 
-                while (drive_encoder.getPosition() < starting_distance + 100) {
-                    move_robot(1, 0, .25, false);
-                }
-                starting_distance = drive_encoder.getPosition();
-                while (drive_encoder.getPosition() > starting_distance - 200) {
-                    move_robot(-1, 0, .25, false); 
-                }
-                break;
+                switch(autonState){
+                    case 0:
+                        move_robot(1, 0, .25, false);
+                        break;
+                    case 1:
+                        move_robot(-1, 0, .25, false); 
+                        break;
+                    case 2:
+                        move_robot(0, 0, 0, false); 
+                        break;
+            }
         }
     }
 
@@ -358,7 +377,7 @@ public class Robot extends TimedRobot {
         if (speed_isSliderInput == true) {
             speed = max_drivePower * (Math.abs(speed - 1)) / 2;
         }
-        robot.arcadeDrive(forward * speed, turn * speed); // Wilbert, Ryan
+        robot.arcadeDrive(forward * speed, turnRate * turn * speed); // Wilbert, Ryan
     }
 
     public double autobalance_robot(double source) {
