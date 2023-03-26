@@ -85,7 +85,7 @@ public class Robot extends TimedRobot {
 
     public RelativeEncoder arm_encoder = motor_arm.getEncoder();
     public RelativeEncoder gripper_encoder = motor_gripper.getEncoder();
-    public RelativeEncoder drive_encoder;
+
 
     // Create objects for both motor pairs to act as one, don't tamper
     private final MotorControllerGroup left_tread = new MotorControllerGroup(motorL_front, motorL_rear);
@@ -105,11 +105,13 @@ public class Robot extends TimedRobot {
     public Servo gripperServo = new Servo(0);
 
     // GLOBAL FOR SMART DASHBOARD.
-    private double max_drivePower = 0.7; // Base maximum power for driving the robot
-    private double max_armPower = 0.3;
-    private double gripperPower = 0.08;
-    private double turnRate = 0.75;
+    private double max_drivePower = 1; // Base maximum power for driving the robot
+    private double max_armPower = 0.2;
+    private double gripperPower = 0.1;
     private boolean limitSwitch_override = false; // IF LIMIT SWITCH BREAKS, SET TO TRUE ON SMARTDASHBOARD OR HERE.
+    
+    private double presetRotation = 0;
+    private boolean arm_preset = false;
     
     // Autobalance Smart Dashboard compatibility
     public double maxAngle = 15.0;
@@ -130,9 +132,6 @@ public class Robot extends TimedRobot {
 
     public double autobalance_power;
     public int lastPressed = 0;
-
-    public int autonState = 0;
-    public double autonStartingPostion = 0.0;
 
     /*
      * Important commands for getting user input:
@@ -207,11 +206,7 @@ public class Robot extends TimedRobot {
         gripperServo.close();
         // m_autoSelected = SmartDashboard.getString("Auto Selector", kDefaultAuto);
         System.out.println("Auto selected: " + m_autoSelected);
-        drive_encoder = motorL_front.getEncoder();
-        drive_encoder.setPosition(0);
-        autonState = 0;   
-        autonStartingPostion = drive_encoder.getPosition();
-     }
+    }
 
     /**
      * This function is called periodically during autonomous.
@@ -225,10 +220,10 @@ public class Robot extends TimedRobot {
             case kAutobalance:
                 boolean balanced = false;
                 float time_balanced = 0;
-                if (Math.abs(navX_gyro.getRoll()) < 2.5) {
-                    move_robot(.2, 0, 1, false); 
+                while (Math.abs(navX_gyro.getRoll ()) < 2.5) {
+                move_robot(-.2, 0, 1, false); 
                 }
-                else if (balanced == false) {
+                while (balanced == false) {
                     autobalance_power = autobalance_robot(navX_gyro.getRoll());
                     move_robot(autobalance_power, 0, 1, false);
                     if (autobalance_power == 0) {
@@ -237,32 +232,23 @@ public class Robot extends TimedRobot {
                     if (time_balanced == 10000) {
                         System.out.println("Robot is balanced :)");
                         balanced = true;
-        
+                        break;
                     } 
                 } 
                 break;
             case kDefaultAuto:
             default:
-                
-                //14:1 6in wheel
-                if (autonState == 0 && drive_encoder.getPosition() > (42*6)*3.14 *18/14.0) {
-                    autonState++;
-                }
-                if (autonState == 1 && drive_encoder.getPosition() < (42*6)*3.14 *32/14.0) {
-                    autonState++;                    
-                }
+                RelativeEncoder drive_encoder = motorL_front.getEncoder();
+                double starting_distance = drive_encoder.getPosition();
 
-                switch(autonState){
-                    case 0:
-                        move_robot(1, 0, .25, false);
-                        break;
-                    case 1:
-                        move_robot(-1, 0, .25, false); 
-                        break;
-                    case 2:
-                        move_robot(0, 0, 0, false); 
-                        break;
-            }
+                while (drive_encoder.getPosition() < starting_distance + 100) {
+                    move_robot(1, 0, .25, false);
+                }
+                starting_distance = drive_encoder.getPosition();
+                while (drive_encoder.getPosition() > starting_distance - 200) {
+                    move_robot(-1, 0, .25, false); 
+                }
+                break;
         }
     }
 
@@ -286,19 +272,25 @@ public class Robot extends TimedRobot {
             move_robot(robot_joystick.getY(), robot_joystick.getZ(), robot_joystick.getRawAxis(3), true);
         } else {
             move_robot(robot_joystick.getY(), robot_joystick.getX(), robot_joystick.getRawAxis(3), true);
-        }   
+        }  
         
-        if (Math.abs(arm_joystick.getY()) > 0.1) {
-            move_robot_arm(false, arm_joystick.getY(), 0);
-        } else if (arm_joystick.getRawButton(8) == true) {
-            move_robot_arm(true, 0, -5);
-        } else if (arm_joystick.getRawButton(10) == true) {
-            move_robot_arm(true, 0, -20);
-        } else if (arm_joystick.getRawButton(12) == true) {
-            move_robot_arm(true, 0, -30);
-        } else {
-            move_robot_arm(false, 0, 0);
+        // Redesigned preset code: detects if any of the buttons are pressed
+        if (arm_joystick.getRawButton(8) == true || 
+            arm_joystick.getRawButton(10) == true || 
+            arm_joystick.getRawButton(12) == true) {
+                arm_preset = true; // Upon the button being pressed, it tells the robot to ignore stick input.
+                // The button pressed determines where the robot should go. 
+                if (arm_joystick.getRawButton(8) == true) {
+                    presetRotation = -30;
+                } else if (arm_joystick.getRawButton(10) == true) {
+                    presetRotation = -15;
+                } else if (arm_joystick.getRawButton(12) == true) {
+                    presetRotation = -5;
+                }
         }
+
+        move_robot_arm(arm_joystick.getY(), presetRotation);
+        
 
         toggle_gripper(arm_joystick.getRawButton(1), arm_joystick.getRawButton(2));
     }
@@ -333,17 +325,19 @@ public class Robot extends TimedRobot {
 
         move_robot(robot_joystick.getY(), robot_joystick.getZ(), robot_joystick.getRawAxis(3), true);
 
-        if (Math.abs(arm_joystick.getY()) > 0.1) {
-            move_robot_arm(false, arm_joystick.getY(), 0);
-        } else if (arm_joystick.getRawButton(8) == true) {
-            move_robot_arm(true, 0, -5);
-        } else if (arm_joystick.getRawButton(10) == true) {
-            move_robot_arm(true, 0, -20);
-        } else if (arm_joystick.getRawButton(12) == true) {
-            move_robot_arm(true, 0, -30);
-        } else {
-            move_robot_arm(false, 0, 0);
+        if (arm_joystick.getRawButton(8) == true || 
+            arm_joystick.getRawButton(10) == true || 
+            arm_joystick.getRawButton(12) == true) {
+                if (arm_joystick.getRawButton(8) == true) {
+                    presetRotation = -30;
+                } else if (arm_joystick.getRawButton(10) == true) {
+                    presetRotation = -15;
+                } else if (arm_joystick.getRawButton(12) == true) {
+                    presetRotation = -5;
+                }
         }
+
+        move_robot_arm(arm_joystick.getY(), presetRotation);
 
         if (Math.abs(emulated_gyroscope.getY()) < .1) {
             autobalance_robot(navX_gyro.getRoll());
@@ -375,7 +369,7 @@ public class Robot extends TimedRobot {
         if (speed_isSliderInput == true) {
             speed = max_drivePower * (Math.abs(speed - 1)) / 2;
         }
-        robot.arcadeDrive(forward * speed, turnRate * turn * speed); // Wilbert, Ryan
+        robot.arcadeDrive(forward * speed, turn * speed); // Wilbert, Ryan
     }
 
     public double autobalance_robot(double source) {
@@ -398,9 +392,10 @@ public class Robot extends TimedRobot {
         return output_power;
     }
 
+/*
     public void move_robot_arm(boolean isPreset, double input, double target) {
         if (isPreset == false) {
-            if (input > 0.1 /*Deadzone*/ && (forwards_switch.get() == false /*Limit Switch Not Pressed*/ || limitSwitch_override == true /*Limit Switches Disabled*/)) {
+            if (input > 0.1 && (forwards_switch.get() == false || limitSwitch_override == true)) {
                 motor_arm.set(arm_joystick.getY() * max_armPower);
             } else if (input < -0.1 && (reverse_switch.get() == false || limitSwitch_override == true)) {
                 motor_arm.set(arm_joystick.getY() * max_armPower);
@@ -424,6 +419,32 @@ public class Robot extends TimedRobot {
             motor_arm.set(0);
         }
     }
+*/
+    public void move_robot_arm(double input, double target) {
+        double preset_margin = 1; // Set the margin of error for the presets
+        /*Example: If your preset is set to go to -36, it should stop between -35.0 and -37.0. */
+        double deadzone = 0.1;      // Set joystick deadzone to prevent drift
+        double idle_power = 0.05;   // Set power enough so that the arm holds up but does not sag.
+
+        if (arm_preset == true && (arm_encoder.getPosition() < target + preset_margin && arm_encoder.getPosition() > target - preset_margin)) {
+            if (rotate_to.calculate(arm_encoder.getPosition(), target) > max_armPower) {
+                motor_arm.set(max_armPower);
+            } else if (rotate_to.calculate(arm_encoder.getPosition(), target) < -max_armPower) {
+                    motor_arm.set(-max_armPower);
+            } else {
+                motor_arm.set(rotate_to.calculate(arm_encoder.getPosition(), target) * max_armPower);
+            }
+        } else {
+            arm_preset = false;
+            if ((reverse_switch.get() == true || forwards_switch.get() == true) && limitSwitch_override == false) {
+                motor_arm.set(0.0); 
+            } else if (Math.abs(input) > deadzone) {
+                motor_arm.set(arm_joystick.getY() * max_armPower);
+            } else {
+                motor_arm.set(-idle_power); 
+            }
+        }
+    }
 
     public void toggle_gripper(boolean close, boolean open) {
         if (close == true && open == false) {
@@ -441,7 +462,7 @@ public class Robot extends TimedRobot {
             }
             motor_gripper.set(-gripperPower);
         } else {
-          /*motor_gripper.set(0);*/
+          motor_gripper.set(0);
         }
     }
 }
