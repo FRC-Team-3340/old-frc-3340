@@ -34,7 +34,6 @@ import com.kauailabs.navx.frc.AHRS; // navX-MXP IMU that has a useful gyroscope
 import com.revrobotics.CANSparkMax; // Spark MAX motor controller
 import edu.wpi.first.wpilibj.Servo  ;
 import com.revrobotics.RelativeEncoder;
-import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType; // Initializes motor types of the Spark MAX motors.
 
 /**
@@ -85,7 +84,8 @@ public class Robot extends TimedRobot {
 
     public RelativeEncoder arm_encoder = motor_arm.getEncoder();
     public RelativeEncoder gripper_encoder = motor_gripper.getEncoder();
-    public RelativeEncoder drive_encoder;
+    public RelativeEncoder drive_encoder = motorL_front.getEncoder();
+
 
     // Create objects for both motor pairs to act as one, don't tamper
     private final MotorControllerGroup left_tread = new MotorControllerGroup(motorL_front, motorL_rear);
@@ -106,26 +106,29 @@ public class Robot extends TimedRobot {
 
     // GLOBAL FOR SMART DASHBOARD.
     private double max_drivePower = 0.7; // Base maximum power for driving the robot
-    private double max_armPower = 0.3;
-    private double gripperPower = 0.08;
-    private double turnRate = 0.75;
+    private double drive_turnRate = 0.75;
+    private double max_armPower = 0.2;
+    private double gripperPower = 0.1;
     private boolean limitSwitch_override = false; // IF LIMIT SWITCH BREAKS, SET TO TRUE ON SMARTDASHBOARD OR HERE.
     
-    // Autobalance Smart Dashboard compatibility
-    public double maxAngle = 15.0;
-    public double minAngle = 2.5;
-    public double maximum_power = 0.35;
+    private double presetRotation = 0;
+    private boolean arm_preset = false;
     
+    // Autobalance Smart Dashboard compatibility
+    public double abMaxAngle = 15.0;
+    public double abMinAngle = 2.5;
+    public double abMaxPower = 0.35;
+
     // Logging and debugging utilities
     public NetworkTableInstance inst = NetworkTableInstance.getDefault();
     public NetworkTable stats_table = inst.getTable("SmartDashboard");
     public BooleanPublisher toggle_limit_switch = stats_table.getBooleanTopic("Disable Limit Switches").publish();
-    public DoublePublisher armPower = stats_table.getDoubleTopic("Arm Power").publish();
-    public DoublePublisher drivePower = stats_table.getDoubleTopic("Drive Power").publish();
-    public DoublePublisher ab_maxAngle = stats_table.getDoubleTopic("Autobalance - Maximum Angle").publish();
-    public DoublePublisher gripperPublisher = stats_table.getDoubleTopic("Gripper Power").publish();
-    public DoublePublisher ab_minAngle = stats_table.getDoubleTopic("Autobalance - Minimum Angle").publish();
-    public DoublePublisher ab_maxPower = stats_table.getDoubleTopic("Autobalance - Maximum Power").publish();
+    public DoublePublisher nt_armPower = stats_table.getDoubleTopic("Arm Power").publish();
+    public DoublePublisher nt_drivePower = stats_table.getDoubleTopic("Drive Power").publish();
+    public DoublePublisher nt_abMaxAngle = stats_table.getDoubleTopic("Autobalance - Maximum Angle").publish();
+    public DoublePublisher nt_gripper = stats_table.getDoubleTopic("Gripper Power").publish();
+    public DoublePublisher nt_abMinAngle = stats_table.getDoubleTopic("Autobalance - Minimum Angle").publish();
+    public DoublePublisher nt_abPower = stats_table.getDoubleTopic("Autobalance - Maximum Power").publish();
     public DoublePublisher ab_axisMeausre = stats_table.getDoubleTopic("Gyroscope Axis (Autobalance)").publish();
 
     public double autobalance_power;
@@ -180,12 +183,12 @@ public class Robot extends TimedRobot {
         SmartDashboard.putNumber("Gripper Position (Encoder)", gripper_encoder.getPosition());
 
         toggle_limit_switch.set(limitSwitch_override);
-        drivePower.set(max_drivePower);
-        ab_maxAngle.set(maxAngle);
-        ab_minAngle.set(minAngle);
-        gripperPublisher.set(gripperPower);
-        armPower.set(max_armPower);
-        ab_maxPower.set(maximum_power);
+        nt_drivePower.set(max_drivePower);
+        nt_abMaxAngle.set(abMaxAngle);
+        nt_abMinAngle.set(abMinAngle);
+        nt_gripper.set(gripperPower);
+        nt_armPower.set(max_armPower);
+        nt_abPower.set(abMaxPower);
         ab_axisMeausre.set(navX_gyro.getRoll());
 
 
@@ -200,6 +203,7 @@ public class Robot extends TimedRobot {
     public void robotPeriodic() {
 
     }
+
     @Override
     public void autonomousInit() {
         m_autoSelected = m_chooser.getSelected();
@@ -207,11 +211,10 @@ public class Robot extends TimedRobot {
         gripperServo.close();
         // m_autoSelected = SmartDashboard.getString("Auto Selector", kDefaultAuto);
         System.out.println("Auto selected: " + m_autoSelected);
-        drive_encoder = motorL_front.getEncoder();
         drive_encoder.setPosition(0);
         autonState = 0;   
         autonStartingPostion = drive_encoder.getPosition();
-     }
+    }
 
     /**
      * This function is called periodically during autonomous.
@@ -220,7 +223,7 @@ public class Robot extends TimedRobot {
     public void autonomousPeriodic() {
         switch (m_autoSelected) {
             case kCustomAuto:
-                // Put custom auto code here
+                // Put custom auto code here                                  
                 break;
             case kAutobalance:
                 boolean balanced = false;
@@ -243,9 +246,6 @@ public class Robot extends TimedRobot {
                 break;
             case kDefaultAuto:
             default:
-                
-                //double starting_distance = drive_encoder.getPosition();
-                
                 //14:1 6in wheel
                 if (autonState == 0 && drive_encoder.getPosition() > (42*6)*3.14 *18/14.0) {
                     autonState++;
@@ -264,7 +264,8 @@ public class Robot extends TimedRobot {
                     case 2:
                         move_robot(0, 0, 0, false); 
                         break;
-            }
+                }
+                break;
         }
     }
 
@@ -288,20 +289,24 @@ public class Robot extends TimedRobot {
             move_robot(robot_joystick.getY(), robot_joystick.getZ(), robot_joystick.getRawAxis(3), true);
         } else {
             move_robot(robot_joystick.getY(), robot_joystick.getX(), robot_joystick.getRawAxis(3), true);
-        }   
+        }  
         
-        if (Math.abs(arm_joystick.getY()) > 0.1) {
-            move_robot_arm(false, arm_joystick.getY(), 0);
-        } else if (arm_joystick.getRawButton(8) == true) {
-            move_robot_arm(true, 0, -5);
-        } else if (arm_joystick.getRawButton(10) == true) {
-            move_robot_arm(true, 0, -20);
-        } else if (arm_joystick.getRawButton(12) == true) {
-            move_robot_arm(true, 0, -30);
-        } else {
-            move_robot_arm(false, 0, 0);
+        // Redesigned preset code: detects if any of the buttons are pressed
+        if (arm_joystick.getRawButton(8) == true || 
+            arm_joystick.getRawButton(10) == true || 
+            arm_joystick.getRawButton(12) == true) {
+                arm_preset = true; // Upon the button being pressed, it tells the robot to ignore stick input.
+                // The button pressed determines where the robot should go. 
+                if (arm_joystick.getRawButton(8) == true) {
+                    presetRotation = -30;
+                } else if (arm_joystick.getRawButton(10) == true) {
+                    presetRotation = -15;
+                } else if (arm_joystick.getRawButton(12) == true) {
+                    presetRotation = -5;
+                }
         }
 
+        move_robot_arm(arm_joystick.getY(), presetRotation);
         toggle_gripper(arm_joystick.getRawButton(1), arm_joystick.getRawButton(2));
     }
 
@@ -318,6 +323,7 @@ public class Robot extends TimedRobot {
      */
     @Override
     public void disabledPeriodic() {
+        
     }
 
     /**
@@ -335,17 +341,19 @@ public class Robot extends TimedRobot {
 
         move_robot(robot_joystick.getY(), robot_joystick.getZ(), robot_joystick.getRawAxis(3), true);
 
-        if (Math.abs(arm_joystick.getY()) > 0.1) {
-            move_robot_arm(false, arm_joystick.getY(), 0);
-        } else if (arm_joystick.getRawButton(8) == true) {
-            move_robot_arm(true, 0, -5);
-        } else if (arm_joystick.getRawButton(10) == true) {
-            move_robot_arm(true, 0, -20);
-        } else if (arm_joystick.getRawButton(12) == true) {
-            move_robot_arm(true, 0, -30);
-        } else {
-            move_robot_arm(false, 0, 0);
+        if (arm_joystick.getRawButton(8) == true || 
+            arm_joystick.getRawButton(10) == true || 
+            arm_joystick.getRawButton(12) == true) {
+                if (arm_joystick.getRawButton(8) == true) {
+                    presetRotation = -30;
+                } else if (arm_joystick.getRawButton(10) == true) {
+                    presetRotation = -15;
+                } else if (arm_joystick.getRawButton(12) == true) {
+                    presetRotation = -5;
+                }
         }
+
+        move_robot_arm(arm_joystick.getY(), presetRotation);
 
         if (Math.abs(emulated_gyroscope.getY()) < .1) {
             autobalance_robot(navX_gyro.getRoll());
@@ -385,45 +393,43 @@ public class Robot extends TimedRobot {
         double autobalanceAxis = source;
         double output_power = 0;
 
-        if (autobalanceAxis > maxAngle) {
-            output_power = -maximum_power;
-        } else if (autobalanceAxis < -maxAngle) {
-            output_power = maximum_power/1.25;
-        } else if (autobalanceAxis > minAngle) {
-            output_power = -(maximum_power * ((autobalanceAxis - minAngle) / (maxAngle - minAngle)));
-        } else if (autobalanceAxis < -minAngle) {
-            output_power = (maximum_power/1.25 * ((autobalanceAxis + minAngle) / (-maxAngle + minAngle)));
+        if (autobalanceAxis > abMaxAngle) {
+            output_power = -abMaxPower;
+        } else if (autobalanceAxis < -abMaxAngle) {
+            output_power = abMaxPower/1.25;
+        } else if (autobalanceAxis > abMinAngle) {
+            output_power = -(abMaxPower * ((autobalanceAxis - abMinAngle) / (abMaxAngle - abMinAngle)));
+        } else if (autobalanceAxis < -abMinAngle) {
+            output_power = (abMaxPower/1.25 * ((autobalanceAxis + abMinAngle) / (-abMaxAngle + abMinAngle)));
         } else {
             output_power = 0;
         }
 
         return output_power;
     }
+    public void move_robot_arm(double input, double target) {
+        double preset_margin = 1; // Set the margin of error for the presets
+        /*Example: If your preset is set to go to -36, it should stop between -35.0 and -37.0. */
+        double deadzone = 0.1;      // Set joystick deadzone to prevent drift
+        double idle_power = 0.05;   // Set power enough so that the arm holds up but does not sag.
 
-    public void move_robot_arm(boolean isPreset, double input, double target) {
-        if (isPreset == false) {
-            if (input > 0.1 /*Deadzone*/ && (forwards_switch.get() == false /*Limit Switch Not Pressed*/ || limitSwitch_override == true /*Limit Switches Disabled*/)) {
-                motor_arm.set(arm_joystick.getY() * max_armPower);
-            } else if (input < -0.1 && (reverse_switch.get() == false || limitSwitch_override == true)) {
-                motor_arm.set(arm_joystick.getY() * max_armPower);
-            } else if ((reverse_switch.get() == true || forwards_switch.get() == true) && limitSwitch_override == false) {
-                motor_arm.set(0.0); 
+        if (arm_preset == true && (arm_encoder.getPosition() < target + preset_margin && arm_encoder.getPosition() > target - preset_margin)) {
+            if (rotate_to.calculate(arm_encoder.getPosition(), target) > max_armPower) {
+                motor_arm.set(max_armPower);
+            } else if (rotate_to.calculate(arm_encoder.getPosition(), target) < -max_armPower) {
+                    motor_arm.set(-max_armPower);
             } else {
-                motor_arm.set(0.05);
+                motor_arm.set(rotate_to.calculate(arm_encoder.getPosition(), target) * max_armPower);
             }
-
-        } else if (isPreset == true) {
-            motor_arm.setIdleMode(IdleMode.kCoast);
-            while (Math.abs(arm_encoder.getPosition() - target) > 0.5) {
-                
-                if (rotate_to.calculate(arm_encoder.getPosition(), target) > max_armPower) {
-                    motor_arm.set(max_armPower);
-                } else {
-                    motor_arm.set(rotate_to.calculate(arm_encoder.getPosition(), target) * max_armPower);
-                }
+        } else {
+            arm_preset = false;
+            if ((reverse_switch.get() == true || forwards_switch.get() == true) && limitSwitch_override == false) {
+                motor_arm.set(0.0); 
+            } else if (Math.abs(input) > deadzone) {
+                motor_arm.set(arm_joystick.getY() * max_armPower);
+            } else {
+                motor_arm.set(-idle_power); 
             }
-            motor_arm.setIdleMode(IdleMode.kBrake);
-            motor_arm.set(0);
         }
     }
 
@@ -443,7 +449,7 @@ public class Robot extends TimedRobot {
             }
             motor_gripper.set(-gripperPower);
         } else {
-          /*motor_gripper.set(0);*/
+          motor_gripper.set(0);
         }
     }
 }
