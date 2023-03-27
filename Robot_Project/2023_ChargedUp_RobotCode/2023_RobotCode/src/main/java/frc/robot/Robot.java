@@ -3,15 +3,17 @@
 // the WPILib BSD license file in the root directory of this project.
 
 /*
- * Also some lines can be shortened to aid in readability Ex. 261, 263, 265
- * Might also wanna shorten the excessive comment code or seperate it better
+    * Migrating to PS5 single-player control. 
  */
+
+
 package frc.robot;
 
 // WPILib Imports
 
 import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.TimedRobot; // Robot Type
+import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser; // Chooser for autonomous
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard; // Debug use only on the computer
 
@@ -20,6 +22,7 @@ import edu.wpi.first.wpilibj.drive.DifferentialDrive;                 // To use 
 import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;       // Conjoins two motors as one
 import edu.wpi.first.wpilibj.DigitalInput;                            // Limit Switch interface for the robot's arm
 import edu.wpi.first.wpilibj.Joystick;                                // Joystick interface for controlling the robot
+import edu.wpi.first.wpilibj.PS4Controller;
 import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.math.controller.PIDController;
 
@@ -77,10 +80,14 @@ public class Robot extends TimedRobot {
     // Motor, sensor, and input config
     private AHRS navX_gyro = new AHRS(SPI.Port.kMXP); // navX gyroscope object, SPI-MXP
     
-    // merge both together
-    private Joystick robot_joystick = new Joystick(0); // Create joystick interface object
-    private Joystick arm_joystick = new Joystick(1);
-    private Joystick emulated_gyroscope = new Joystick(2); // ignore this
+    // Uncomment which one you need.
+    private PS4Controller controller = new PS4Controller(0); // Create joystick interface object
+    // private XboxController controller = new XboxController(0);
+
+    /* All of these have been merged to one controller, preferably a PS4 controller */
+    // private Joystick robot_joystick = new Joystick(0);
+    // private Joystick arm_joystick = new Joystick(1);
+    // private Joystick emulated_gyroscope = new Joystick(2); // ignore this
 
     public RelativeEncoder arm_encoder = motor_arm.getEncoder();
     public RelativeEncoder gripper_encoder = motor_gripper.getEncoder();
@@ -107,6 +114,7 @@ public class Robot extends TimedRobot {
     // GLOBAL FOR SMART DASHBOARD.
     private double max_drivePower = 0.7; // Base maximum power for driving the robot
     private double drive_turnRate = 0.75;
+    public int current_gear = 1;
     private double max_armPower = 0.2;
     private double gripperPower = 0.1;
     private boolean limitSwitch_override = false; // IF LIMIT SWITCH BREAKS, SET TO TRUE ON SMARTDASHBOARD OR HERE.
@@ -229,11 +237,11 @@ public class Robot extends TimedRobot {
                 boolean balanced = false;
                 float time_balanced = 0;
                 if (Math.abs(navX_gyro.getRoll()) < 2.5) {
-                    move_robot(.2, 0, 1, false); 
+                    robot.arcadeDrive(0.25, 0); 
                 }
                 else if (balanced == false) {
                     autobalance_power = autobalance_robot(navX_gyro.getRoll());
-                    move_robot(autobalance_power, 0, 1, false);
+                    robot.arcadeDrive(autobalance_power, 0);
                     if (autobalance_power == 0) {
                         time_balanced++;
                     }
@@ -256,13 +264,13 @@ public class Robot extends TimedRobot {
 
                 switch(autonState){
                     case 0:
-                        move_robot(1, 0, .25, false);
+                        robot.arcadeDrive(.25, 0);
                         break;
                     case 1:
-                        move_robot(-1, 0, .25, false); 
+                        robot.arcadeDrive(-.25, 0);
                         break;
                     case 2:
-                        move_robot(0, 0, 0, false); 
+                        robot.arcadeDrive(0, 0);
                         break;
                 }
                 break;
@@ -285,29 +293,29 @@ public class Robot extends TimedRobot {
         limitSwitch_override = SmartDashboard.getBoolean("Forward Limit Enabled", false);
 
         // Driving the robot, allowing support for twisting and moving stick left and right.
-        if (Math.abs(robot_joystick.getX()) < Math.abs(robot_joystick.getZ())){
-            move_robot(robot_joystick.getY(), robot_joystick.getZ(), robot_joystick.getRawAxis(3), true);
-        } else {
-            move_robot(robot_joystick.getY(), robot_joystick.getX(), robot_joystick.getRawAxis(3), true);
-        }  
-        
-        // Redesigned preset code: detects if any of the buttons are pressed
-        if (arm_joystick.getRawButton(8) == true || 
-            arm_joystick.getRawButton(10) == true || 
-            arm_joystick.getRawButton(12) == true) {
-                arm_preset = true; // Upon the button being pressed, it tells the robot to ignore stick input.
-                // The button pressed determines where the robot should go. 
-                if (arm_joystick.getRawButton(8) == true) {
-                    presetRotation = -30;
-                } else if (arm_joystick.getRawButton(10) == true) {
-                    presetRotation = -15;
-                } else if (arm_joystick.getRawButton(12) == true) {
-                    presetRotation = -5;
-                }
-        }
+        move_robot(controller.getLeftY(), controller.getLeftX(), current_gear);
 
-        move_robot_arm(arm_joystick.getY(), presetRotation);
-        toggle_gripper(arm_joystick.getRawButton(1), arm_joystick.getRawButton(2));
+        
+        // // Redesigned preset code: detects if any of the buttons are pressed
+        // if (arm_joystick.getRawButton(8) == true || 
+        //     arm_joystick.getRawButton(10) == true || 
+        //     arm_joystick.getRawButton(12) == true) {
+        //         arm_preset = true; // Upon the button being pressed, it tells the robot to ignore stick input.
+        //         // The button pressed determines where the robot should go. 
+        //         if (arm_joystick.getRawButton(8) == true) {
+        //             presetRotation = -30;
+        //         } else if (arm_joystick.getRawButton(10) == true) {
+        //             presetRotation = -15;
+        //         } else if (arm_joystick.getRawButton(12) == true) {
+        //             presetRotation = -5;
+        //         }
+        // }
+
+        // Preset code for single controller
+        // if (controller.getTopPressed() == true || controller.get)
+
+        move_robot_arm(controller.getRightY(), presetRotation);
+        toggle_gripper(controller.getR1Button(), controller.getL1Button());
     }
 
     /**
@@ -339,8 +347,10 @@ public class Robot extends TimedRobot {
     public void testPeriodic() {
         limitSwitch_override = SmartDashboard.getBoolean("Forward Limit Enabled", false);
 
-        move_robot(robot_joystick.getY(), robot_joystick.getZ(), robot_joystick.getRawAxis(3), true);
+        move_robot(controller.getLeftY(), controller.getLeftX(), current_gear);
 
+        System.out.println(controller.getCircleButton());
+        /*
         if (arm_joystick.getRawButton(8) == true || 
             arm_joystick.getRawButton(10) == true || 
             arm_joystick.getRawButton(12) == true) {
@@ -352,16 +362,26 @@ public class Robot extends TimedRobot {
                     presetRotation = -5;
                 }
         }
+        */
 
-        move_robot_arm(arm_joystick.getY(), presetRotation);
 
-        if (Math.abs(emulated_gyroscope.getY()) < .1) {
-            autobalance_robot(navX_gyro.getRoll());
-        } else {
-            autobalance_robot(emulated_gyroscope.getY());
+        if (controller.getPOV() == 0 || controller.getPOV() == 180) {
+            arm_preset = true;
+            if (controller.getPOV() == 0) {
+                if (presetRotation - 10 < -5) {
+                    presetRotation = presetRotation - 10;
+                } else {
+                    presetRotation = -5;
+                }
+            } else if (controller.getPOV() == 180) {
+                if (presetRotation > -36) {
+                    presetRotation = presetRotation - 10;           
+                } else {
+                    presetRotation = -36;
+                }     
+            }  
         }
-
-
+        move_robot_arm(controller.getRightY(), presetRotation);
     }
 
     /**
@@ -381,11 +401,18 @@ public class Robot extends TimedRobot {
 
     }
 
-    public void move_robot(double forward, double turn, double speed, boolean speed_isSliderInput) {
-        if (speed_isSliderInput == true) {
-            speed = max_drivePower * (Math.abs(speed - 1)) / 2;
-        }
-        robot.arcadeDrive(forward * speed, drive_turnRate * turn * speed); // Wilbert, Ryan
+    // public void move_robot(double forward, double turn, double speed, boolean speed_isSliderInput) {
+    //     if (speed_isSliderInput == true) {
+    //         speed = max_drivePower * (Math.abs(speed - 1)) / 2;
+    //     }
+    //     robot.arcadeDrive(forward * speed, drive_turnRate * turn * speed); // Wilbert, Ryan
+    // }
+
+    // This incorporates shifting gear instead of the slider.
+    public void move_robot(double move, double turn, double gear) {
+        double speed = max_drivePower * gear;
+
+        robot.arcadeDrive(move * speed, turn * speed);
     }
 
     public double autobalance_robot(double source) {
@@ -407,6 +434,7 @@ public class Robot extends TimedRobot {
 
         return output_power;
     }
+
     public void move_robot_arm(double input, double target) {
         double preset_margin = 1; // Set the margin of error for the presets
         /*Example: If your preset is set to go to -36, it should stop between -35.0 and -37.0. */
@@ -426,7 +454,7 @@ public class Robot extends TimedRobot {
             if ((reverse_switch.get() == true || forwards_switch.get() == true) && limitSwitch_override == false) {
                 motor_arm.set(0.0); 
             } else if (Math.abs(input) > deadzone) {
-                motor_arm.set(arm_joystick.getY() * max_armPower);
+                motor_arm.set(input * max_armPower);
             } else {
                 motor_arm.set(-idle_power); 
             }
@@ -435,18 +463,22 @@ public class Robot extends TimedRobot {
 
     public void toggle_gripper(boolean close, boolean open) {
         if (close == true && open == false) {
+
             try{
                 Thread.sleep(100);
             } catch (InterruptedException ex){
                 ex.printStackTrace();
             }
+
             motor_gripper.set(gripperPower);
         } else if (open == true && close == false) {
+
             try{
                 Thread.sleep(100);
             } catch (InterruptedException ex){
                 ex.printStackTrace();
             }
+
             motor_gripper.set(-gripperPower);
         } else {
           motor_gripper.set(0);
