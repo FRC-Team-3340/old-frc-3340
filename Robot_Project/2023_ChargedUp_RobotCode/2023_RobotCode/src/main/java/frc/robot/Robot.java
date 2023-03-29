@@ -121,7 +121,7 @@ public class Robot extends TimedRobot {
     private double gripperPower = 0.1;
     private boolean limitSwitch_override = true; // IF LIMIT SWITCH BREAKS, SET TO TRUE ON SMARTDASHBOARD OR HERE.
     
-    private double presetRotation[] = {-5.0, -15.0, -30.0};
+    private double presetRotations[] = {-5.0, -15.0, -30.0};
     private boolean arm_preset = false;
     
     // Autobalance Smart Dashboard compatibility
@@ -148,6 +148,7 @@ public class Robot extends TimedRobot {
     public int autonState = 0;
     public double autonStartingPostion = 0.0;
     public double drive_distance; // IN INCHES
+    public double preset = 0;
 
 
     /*
@@ -362,11 +363,8 @@ public class Robot extends TimedRobot {
     @Override
     public void testPeriodic() {
         limitSwitch_override = SmartDashboard.getBoolean("Forward Limit Enabled", false);
-
-        double movment = (-controller.getL2Axis() + controller.getR2Axis()) * max_drivePower;
-        System.out.println(movment);
-
-        move_robot(movment, controller.getLeftX(), current_gear);
+        double movement = (-controller.getL2Axis() + controller.getR2Axis()) * max_drivePower;
+        move_robot(movement, controller.getLeftX(), current_gear);
 
         /*
         if (arm_joystick.getRawButton(8) == true || 
@@ -381,26 +379,18 @@ public class Robot extends TimedRobot {
                 }
         }
         */
+        if (controller.getPOV() <= 180) {
+            arm_preset = true;
+            if (controller.getPOV() == 0) {
+                preset = presetRotations[0];
+            } else if (controller.getPOV() == 90) {
+                preset = presetRotations[1];
+            } else if (controller.getPOV() == 180) {
+                preset = presetRotations[2];
+            }  
+        }
 
-
-        // if (controller.getPOV() == 0 || controller.getPOV() == 180) {
-        //     arm_preset = true;
-        //     if (controller.getPOV() == 0) {
-        //         if (presetRotation - 10 < -5) {
-        //             presetRotation = presetRotation - 10;
-        //         } else {
-        //             presetRotation = -5;
-        //         }
-        //     } else if (controller.getPOV() == 180) {
-        //         if (presetRotation > -36) {
-        //             presetRotation = presetRotation - 10;           
-        //         } else {
-        //             presetRotation = -36;
-        //         }     
-        //     }  
-        // }
-
-        // move_robot_arm(controller.getRightY(), presetRotation);
+        move_robot_arm(controller.getRightY(), preset);
     }
 
     /**
@@ -472,7 +462,7 @@ public class Robot extends TimedRobot {
             arm_preset = false;
             if ((reverse_switch.get() == true || forwards_switch.get() == true) && limitSwitch_override == false) {
                 motor_arm.set(0.0); 
-                System.out.println(input);
+                // System.out.println(input);
             } else if (Math.abs(input) > deadzone) {
                 motor_arm.set(input * max_armPower);
             } else {
