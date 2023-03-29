@@ -112,12 +112,12 @@ public class Robot extends TimedRobot {
     public Servo gripperServo = new Servo(0);
 
     // GLOBAL FOR SMART DASHBOARD.
-    private double max_drivePower = 0.7; // Base maximum power for driving the robot
+    private double max_drivePower = 0.5; // Base maximum power for driving the robot
     private double drive_turnRate = 0.75;
     public int current_gear = 1;
     private double max_armPower = 0.2;
     private double gripperPower = 0.1;
-    private boolean limitSwitch_override = false; // IF LIMIT SWITCH BREAKS, SET TO TRUE ON SMARTDASHBOARD OR HERE.
+    private boolean limitSwitch_override = true; // IF LIMIT SWITCH BREAKS, SET TO TRUE ON SMARTDASHBOARD OR HERE.
     
     private double presetRotation = 0;
     private boolean arm_preset = false;
@@ -255,24 +255,32 @@ public class Robot extends TimedRobot {
             case kDefaultAuto:
             default:
                 //14:1 6in wheel
-                if (autonState == 0 && drive_encoder.getPosition() > (42*6)*3.14 *18/14.0) {
-                    autonState++;
-                }
-                if (autonState == 1 && drive_encoder.getPosition() < (42*6)*3.14 *32/14.0) {
-                    autonState++;                    
+                System.out.println(drive_encoder.getPosition());
+
+                if (drive_encoder.getPosition() < (3*))
+                // if (drive_encoder.getPosition() < (42*6)*3.14 * 14.0/18.0) {
+                    robot.arcadeDrive(-.5, 0);
                 }
 
-                switch(autonState){
-                    case 0:
-                        robot.arcadeDrive(.25, 0);
-                        break;
-                    case 1:
-                        robot.arcadeDrive(-.25, 0);
-                        break;
-                    case 2:
-                        robot.arcadeDrive(0, 0);
-                        break;
-                }
+                // System.out.println((42*6)*3.14 *18/14.0);
+                // if (autonState == 0 && drive_encoder.getPosition() > (3 *(42*6)*3.    *18/14.0)) {
+                //     autonState++;
+                // }
+                // if (autonState == 1 && drive_encoder.getPosition() < (42*6)*3.14 *32/14.0) {
+                //     autonState++;                    
+                // }
+
+                // switch(autonState){
+                //     case 0:
+                //         robot.arcadeDrive(.25, 0);
+                //         break;
+                //     case 1:
+                //         robot.arcadeDrive(-.25, 0);
+                //         break;
+                //     case 2:
+                //         robot.arcadeDrive(0, 0);
+                //         break;
+                // }
                 break;
         }
     }
@@ -347,7 +355,10 @@ public class Robot extends TimedRobot {
     public void testPeriodic() {
         limitSwitch_override = SmartDashboard.getBoolean("Forward Limit Enabled", false);
 
-        move_robot(controller.getLeftY(), controller.getLeftX(), current_gear);
+        double movment = (-controller.getL2Axis() + controller.getR2Axis()) * max_drivePower;
+        System.out.println(movment);
+
+        move_robot(movment, controller.getLeftX(), current_gear);
 
         System.out.println(controller.getCircleButton());
         /*
@@ -453,6 +464,7 @@ public class Robot extends TimedRobot {
             arm_preset = false;
             if ((reverse_switch.get() == true || forwards_switch.get() == true) && limitSwitch_override == false) {
                 motor_arm.set(0.0); 
+                System.out.println(input);
             } else if (Math.abs(input) > deadzone) {
                 motor_arm.set(input * max_armPower);
             } else {
@@ -479,7 +491,7 @@ public class Robot extends TimedRobot {
                 ex.printStackTrace();
             }
 
-            motor_gripper.set(-gripperPower);
+           motor_gripper.set(-gripperPower);
         } else {
           motor_gripper.set(0);
         }
