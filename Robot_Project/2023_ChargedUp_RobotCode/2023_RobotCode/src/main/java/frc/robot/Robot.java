@@ -126,6 +126,7 @@ public class Robot extends TimedRobot {
     public double abMaxAngle = 15.0;
     public double abMinAngle = 2.5;
     public double abMaxPower = 0.35;
+    
 
     // Logging and debugging utilities
     public NetworkTableInstance inst = NetworkTableInstance.getDefault();
@@ -222,6 +223,7 @@ public class Robot extends TimedRobot {
         drive_encoder.setPosition(0);
         autonState = 0;   
         autonStartingPostion = drive_encoder.getPosition();
+        
     }
 
     /**
@@ -254,13 +256,20 @@ public class Robot extends TimedRobot {
                 break;
             case kDefaultAuto:
             default:
-                //14:1 6in wheel
-                System.out.println(drive_encoder.getPosition());
+                double drive_distance = 18; // IN INCHES
 
-                if (drive_encoder.getPosition() < (3*))
-                // if (drive_encoder.getPosition() < (42*6)*3.14 * 14.0/18.0) {
-                    robot.arcadeDrive(-.5, 0);
-                }
+                //14:1 6in wheel
+                // System.out.println(drive_encoder.getPosition());
+                    if (autonState == 0 && drive_encoder.getPosition() > ((2.35*(42/14) * drive_distance / (6 * Math.PI)))) {
+                        autonState++;
+                        drive_encoder.setPosition(0);
+                        drive_distance = 36;
+                    }
+                    if (autonState == 1 && drive_encoder.getPosition() < ((2.35*(42/14) * drive_distance / (6 * Math.PI)))) {
+                        autonState++;
+                    }
+
+
 
                 // System.out.println((42*6)*3.14 *18/14.0);
                 // if (autonState == 0 && drive_encoder.getPosition() > (3 *(42*6)*3.    *18/14.0)) {
@@ -270,18 +279,17 @@ public class Robot extends TimedRobot {
                 //     autonState++;                    
                 // }
 
-                // switch(autonState){
-                //     case 0:
-                //         robot.arcadeDrive(.25, 0);
-                //         break;
-                //     case 1:
-                //         robot.arcadeDrive(-.25, 0);
-                //         break;
-                //     case 2:
-                //         robot.arcadeDrive(0, 0);
-                //         break;
-                // }
-                break;
+                switch(autonState){
+                    case 0:
+                        robot.arcadeDrive(-0.25, 0);
+                        break;
+                    case 1:
+                        robot.arcadeDrive(.25, 0);
+                        break;
+                    case 2:
+                        robot.arcadeDrive(0, 0);
+                        break;
+            }
         }
     }
 
