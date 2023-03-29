@@ -32,6 +32,8 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.BooleanPublisher;
 import edu.wpi.first.networktables.DoublePublisher;
 
+import java.lang.reflect.Array;
+
 // Imports for sensors, motors, and inputs - comment what each import is for
 import com.kauailabs.navx.frc.AHRS; // navX-MXP IMU that has a useful gyroscope
 import com.revrobotics.CANSparkMax; // Spark MAX motor controller
@@ -119,7 +121,7 @@ public class Robot extends TimedRobot {
     private double gripperPower = 0.1;
     private boolean limitSwitch_override = true; // IF LIMIT SWITCH BREAKS, SET TO TRUE ON SMARTDASHBOARD OR HERE.
     
-    private double presetRotation = 0;
+    private double presetRotation[] = {-5.0, -15.0, -30.0};
     private boolean arm_preset = false;
     
     // Autobalance Smart Dashboard compatibility
@@ -145,6 +147,8 @@ public class Robot extends TimedRobot {
 
     public int autonState = 0;
     public double autonStartingPostion = 0.0;
+    public double drive_distance; // IN INCHES
+
 
     /*
      * Important commands for getting user input:
@@ -256,40 +260,36 @@ public class Robot extends TimedRobot {
                 break;
             case kDefaultAuto:
             default:
-                double drive_distance = 18; // IN INCHES
-
+                double autonRotations = Math.abs(drive_encoder.getPosition());
                 //14:1 6in wheel
-                // System.out.println(drive_encoder.getPosition());
-                    if (autonState == 0 && drive_encoder.getPosition() > ((2.35*(42/14) * drive_distance / (6 * Math.PI)))) {
+                // drive_distance measures inches.
+                if (autonState == 0) {
+                    drive_distance = 18;
+                    if (autonRotations > ((2.35*(42/14) * drive_distance / (6 * Math.PI)))) {
                         autonState++;
-                        drive_encoder.setPosition(0);
-                        drive_distance = 36;
+                        autonStartingPostion = Math.abs(drive_encoder.getPosition());
+                    } else {
+                        robot.arcadeDrive(-0.25, 0);
                     }
-                    if (autonState == 1 && drive_encoder.getPosition() < ((2.35*(42/14) * drive_distance / (6 * Math.PI)))) {
+                }
+                if (autonState == 1) {
+                    drive_distance = 36;
+                    if (autonRotations - autonStartingPostion < ((2.35*(42/14) * drive_distance / (6 * Math.PI)))) {
                         autonState++;
+                        autonStartingPostion = Math.abs(drive_encoder.getPosition());
+                    } else {
+                        robot.arcadeDrive(0.25, 0);
                     }
-
-
-
-                // System.out.println((42*6)*3.14 *18/14.0);
+                } else {
+                    robot.arcadeDrive(0, 0);
+                }
+                /* System.out.println((42*6)*3.14 *18/14.0);
                 // if (autonState == 0 && drive_encoder.getPosition() > (3 *(42*6)*3.    *18/14.0)) {
                 //     autonState++;
                 // }
                 // if (autonState == 1 && drive_encoder.getPosition() < (42*6)*3.14 *32/14.0) {
                 //     autonState++;                    
-                // }
-
-                switch(autonState){
-                    case 0:
-                        robot.arcadeDrive(-0.25, 0);
-                        break;
-                    case 1:
-                        robot.arcadeDrive(.25, 0);
-                        break;
-                    case 2:
-                        robot.arcadeDrive(0, 0);
-                        break;
-            }
+                */ 
         }
     }
 
@@ -330,7 +330,7 @@ public class Robot extends TimedRobot {
         // Preset code for single controller
         // if (controller.getTopPressed() == true || controller.get)
 
-        move_robot_arm(controller.getRightY(), presetRotation);
+        // move_robot_arm(controller.getRightY(), presetRotation);
         toggle_gripper(controller.getR1Button(), controller.getL1Button());
     }
 
@@ -368,7 +368,6 @@ public class Robot extends TimedRobot {
 
         move_robot(movment, controller.getLeftX(), current_gear);
 
-        System.out.println(controller.getCircleButton());
         /*
         if (arm_joystick.getRawButton(8) == true || 
             arm_joystick.getRawButton(10) == true || 
@@ -384,23 +383,24 @@ public class Robot extends TimedRobot {
         */
 
 
-        if (controller.getPOV() == 0 || controller.getPOV() == 180) {
-            arm_preset = true;
-            if (controller.getPOV() == 0) {
-                if (presetRotation - 10 < -5) {
-                    presetRotation = presetRotation - 10;
-                } else {
-                    presetRotation = -5;
-                }
-            } else if (controller.getPOV() == 180) {
-                if (presetRotation > -36) {
-                    presetRotation = presetRotation - 10;           
-                } else {
-                    presetRotation = -36;
-                }     
-            }  
-        }
-        move_robot_arm(controller.getRightY(), presetRotation);
+        // if (controller.getPOV() == 0 || controller.getPOV() == 180) {
+        //     arm_preset = true;
+        //     if (controller.getPOV() == 0) {
+        //         if (presetRotation - 10 < -5) {
+        //             presetRotation = presetRotation - 10;
+        //         } else {
+        //             presetRotation = -5;
+        //         }
+        //     } else if (controller.getPOV() == 180) {
+        //         if (presetRotation > -36) {
+        //             presetRotation = presetRotation - 10;           
+        //         } else {
+        //             presetRotation = -36;
+        //         }     
+        //     }  
+        // }
+
+        // move_robot_arm(controller.getRightY(), presetRotation);
     }
 
     /**
