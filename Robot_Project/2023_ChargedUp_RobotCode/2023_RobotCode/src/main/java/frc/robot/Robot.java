@@ -403,7 +403,7 @@ public class Robot extends TimedRobot {
         move_robot(movement, controller.getLeftX(), max_drivePower);
 
         // Presets for the arm
-        if (controller.getPOV() <= 180 && controller.getPOV() != -1 && arm_preset = true) {
+        if (controller.getPOV() <= 180 && controller.getPOV() != -1 && arm_preset == true) {
             arm_preset = true;
             if (controller.getPOV() == 0) {
                 arm_preset_value = presetRotations[2];
@@ -476,17 +476,19 @@ public class Robot extends TimedRobot {
         double deadzone = 0.1;      // Set joystick deadzone to prevent drift
         double idle_power = 0.05;   // Set power enough so that the arm holds up but does not sag.
 
-        if (arm_preset == true && (arm_encoder.getPosition() < target + preset_margin && arm_encoder.getPosition() > target - preset_margin)) {
-            if (rotate_to.calculate(arm_encoder.getPosition(), target) > max_armPower) {
-                motor_arm.set(max_armPower);
-            } else if (rotate_to.calculate(arm_encoder.getPosition(), target) < -max_armPower) {
-                    motor_arm.set(-max_armPower);
+        if (arm_preset == true) {
+            double armTargetSpeed = rotate_to.calculate(arm_encoder.getPosition(), target);
+            if (armTargetSpeed > max_armPower) armTargetSpeed = max_armPower;
+            if (armTargetSpeed < -max_armPower) armTargetSpeed = -max_armPower;
+            if (arm_encoder.getPosition() < target - preset_margin || arm_encoder.getPosition() > target + preset_margin){
+                motor_arm.set(armTargetSpeed);
             } else {
-                motor_arm.set(rotate_to.calculate(arm_encoder.getPosition(), target) * max_armPower);
+                arm_preset = false;
+                motor_arm.set(-idle_power); // idle if no input
             }
         } else {
             arm_preset = false;
-            if ((reverse_switch.get() == true || forwards_switch.get() == true )&& limitSwitch_override == false) {
+            if ((reverse_switch.get() == true || forwards_switch.get() == true ) && limitSwitch_override == false) {
                 motor_arm.set(0.0); // stops if limit is hit
             } else if (Math.abs(input) > deadzone) {
                 if (reverse_switch.get() == true && input < 0) {
@@ -500,9 +502,6 @@ public class Robot extends TimedRobot {
                 motor_arm.set(-idle_power); // idle if no input
             }
         }
-
-        
-
     }
     // boop
     public void toggle_gripper(boolean close, boolean open) {
