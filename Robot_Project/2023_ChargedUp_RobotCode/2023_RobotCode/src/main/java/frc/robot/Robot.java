@@ -153,8 +153,6 @@ public class Robot extends TimedRobot {
     public double turn_angle = 0.0;
     public double arm_preset_value = 0.0;
 
-    public double armStartingPosition = 0.0;
-
     public boolean button_held = false;
 
     Thread camera_process;
@@ -257,8 +255,6 @@ public class Robot extends TimedRobot {
         autonState = 0;   
         autonStartingPostion = drive_encoder.getPosition();
         autonStartingRotation = navX_gyro.getYaw();
-
-        armStartingPosition = arm_encoder.getPosition();
     }
 
     /**
@@ -490,9 +486,10 @@ public class Robot extends TimedRobot {
             }
         } else {
             arm_preset = false;
-            if ((reverse_switch.get() == true || forwards_switch.get() == true) && limitSwitch_override == false) {
+            if (reverse_switch.get() == true && limitSwitch_override == false) {
                 motor_arm.set(0.0); 
-                // System.out.println(input);
+            } else if (forwards_switch.get() == true && limitSwitch_override == false) {
+                motor_arm.set(0.0); 
             } else if (Math.abs(input) > deadzone) {
                 motor_arm.set(input * max_armPower);
             } else {
