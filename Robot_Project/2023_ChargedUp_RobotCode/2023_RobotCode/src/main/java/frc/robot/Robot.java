@@ -14,6 +14,7 @@ package frc.robot;
 import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.TimedRobot; // Robot Type
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser; // Chooser for autonomous
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard; // Debug use only on the computer
 
@@ -114,7 +115,8 @@ public class Robot extends TimedRobot {
     public Servo gripperServo = new Servo(0);
 
     // GLOBAL FOR SMART DASHBOARD.
-    private double max_drivePower = 0.5; // Base maximum power for driving the robot
+    private double drivePower[] = {0.25, 0.5, 0.7};
+    private double max_drivePower = drivePower[0]; // Base maximum power for driving the robot
     private double drive_turnRate = 0.75;
     public int current_gear = 1;
     private double max_armPower = 0.2;
@@ -380,17 +382,21 @@ public class Robot extends TimedRobot {
         move_robot(movement, controller.getLeftX(), current_gear);
 
         // Presets for the arm
-        if (controller.getPOV() <= 180) {
+        if (controller.getPOV() <= 180 && controller.getPOV() != -1 && arm_preset != true) {
             arm_preset = true;
             if (controller.getPOV() == 0) {
-                arm_preset_value = presetRotations[0];
+                arm_preset_value = presetRotations[2];
             } else if (controller.getPOV() == 90) {
                 arm_preset_value = presetRotations[1];
             } else if (controller.getPOV() == 180) {
-                arm_preset_value = presetRotations[2];
+                arm_preset_value = presetRotations[0];
             }  
+            System.out.printf("Set rotation to %f%n", arm_preset_value);
         }
+        
         move_robot_arm(controller.getRightY(), arm_preset_value);
+        toggle_gripper(controller.getR1Button(), controller.getL1Button());
+        shift_gear();
     }
 
     /**
@@ -494,4 +500,13 @@ public class Robot extends TimedRobot {
           motor_gripper.set(0);
         }
     }
+
+    public void shift_gear() {
+        // There is haptic feedback (controller vibration) and visual feedback
+        // If you do not like controller vibration comment out this line by pressing "CTRL" + "/"
+
+        controller.setRumble(RumbleType.kLeftRumble, max_drivePower);
+        
+    }
+
 }
