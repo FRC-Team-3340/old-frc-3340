@@ -147,8 +147,10 @@ public class Robot extends TimedRobot {
 
     public int autonState = 0;
     public double autonStartingPostion = 0.0;
-    public double drive_distance; // IN INCHES
-    public double preset = 0;
+    public double autonStartingRotation = 0.0;
+    public double drive_distance = 0.0; // IN INCHES
+    public double turn_angle = 0.0;
+    public double arm_preset_value = 0.0;
 
 
     /*
@@ -228,7 +230,7 @@ public class Robot extends TimedRobot {
         drive_encoder.setPosition(0);
         autonState = 0;   
         autonStartingPostion = drive_encoder.getPosition();
-        
+        autonStartingRotation = navX_gyro.getYaw();
     }
 
     /**
@@ -237,8 +239,7 @@ public class Robot extends TimedRobot {
     @Override
     public void autonomousPeriodic() {
         switch (m_autoSelected) {
-            case kCustomAuto:
-                // Put custom auto code here                                  
+            case kCustomAuto:                                
                 break;
             case kAutobalance:
                 boolean balanced = false;
@@ -261,36 +262,48 @@ public class Robot extends TimedRobot {
                 break;
             case kDefaultAuto:
             default:
-                double autonRotations = Math.abs(drive_encoder.getPosition());
-                //14:1 6in wheel
-                // drive_distance measures inches.
+                double autonRotations = drive_encoder.getPosition();
+                double autonTurn = navX_gyro.getYaw();
+
+                // distance * (42cts * 14gearRatio)/(6in*PI) = encoder Cts
+                // Copy this for each step in autonomous period
                 if (autonState == 0) {
-                    drive_distance = 18;
-                    if (autonRotations > ((2.35*(42/14) * drive_distance / (6 * Math.PI)))) {
+                    drive_distance = 18; // 18 in drive distance for this step
+                    if (autonRotations - autonStartingPostion > (drive_distance * (42 * 14) / (6 * Math.PI))) {
                         autonState++;
-                        autonStartingPostion = Math.abs(drive_encoder.getPosition());
+                        autonStartingPostion = drive_encoder.getPosition();
                     } else {
-                        robot.arcadeDrive(-0.25, 0);
+                        robot.arcadeDrive(-0.25, 0); // Speed for this step
+                        System.out.printf("%-20f%f%n", autonStartingPostion, (drive_distance * (42 * 14) / (6 * Math.PI)), autonRotations);
                     }
                 }
                 if (autonState == 1) {
                     drive_distance = 36;
-                    if (autonRotations - autonStartingPostion < ((2.35*(42/14) * drive_distance / (6 * Math.PI)))) {
+                    if (autonRotations - autonStartingPostion > (drive_distance * (42 * 14) / (6 * Math.PI))) {
                         autonState++;
-                        autonStartingPostion = Math.abs(drive_encoder.getPosition());
+                        autonStartingPostion = drive_encoder.getPosition();
                     } else {
                         robot.arcadeDrive(0.25, 0);
+                        System.out.printf("%-20f%f%f%n", autonStartingPostion, (drive_distance * (42 * 14) / (6 * Math.PI)), autonRotations);
                     }
-                } else {
+                }
+                if (autonState == 2) {
                     robot.arcadeDrive(0, 0);
                 }
-                /* System.out.println((42*6)*3.14 *18/14.0);
-                // if (autonState == 0 && drive_encoder.getPosition() > (3 *(42*6)*3.    *18/14.0)) {
-                //     autonState++;
-                // }
-                // if (autonState == 1 && drive_encoder.getPosition() < (42*6)*3.14 *32/14.0) {
-                //     autonState++;                    
-                */ 
+
+                // This is for a rotation 
+                if (autonState == 3){
+                    turn_angle = 90.0;
+                    if (autonTurn - autonStartingRotation > turn_angle){
+                        autonState++;
+                        autonStartingRotation = navX_gyro.getYaw();
+                    } else {
+                        robot.arcadeDrive(0, 0.5); // CHECK direction
+                        System.out.printf("%-20f%f%f%n", autonTurn, autonStartingRotation, turn_angle);
+                    }
+
+
+                }
         }
     }
 
@@ -366,31 +379,18 @@ public class Robot extends TimedRobot {
         double movement = (-controller.getL2Axis() + controller.getR2Axis()) * max_drivePower;
         move_robot(movement, controller.getLeftX(), current_gear);
 
-        /*
-        if (arm_joystick.getRawButton(8) == true || 
-            arm_joystick.getRawButton(10) == true || 
-            arm_joystick.getRawButton(12) == true) {
-                if (arm_joystick.getRawButton(8) == true) {
-                    presetRotation = -30;
-                } else if (arm_joystick.getRawButton(10) == true) {
-                    presetRotation = -15;
-                } else if (arm_joystick.getRawButton(12) == true) {
-                    presetRotation = -5;
-                }
-        }
-        */
+        // Presets for the arm
         if (controller.getPOV() <= 180) {
             arm_preset = true;
             if (controller.getPOV() == 0) {
-                preset = presetRotations[0];
+                arm_preset_value = presetRotations[0];
             } else if (controller.getPOV() == 90) {
-                preset = presetRotations[1];
+                arm_preset_value = presetRotations[1];
             } else if (controller.getPOV() == 180) {
-                preset = presetRotations[2];
+                arm_preset_value = presetRotations[2];
             }  
         }
-
-        move_robot_arm(controller.getRightY(), preset);
+        move_robot_arm(controller.getRightY(), arm_preset_value);
     }
 
     /**
