@@ -13,7 +13,6 @@ package frc.robot;
 
 import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.TimedRobot; // Robot Type
-import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser; // Chooser for autonomous
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard; // Debug use only on the computer
@@ -34,8 +33,6 @@ import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.BooleanPublisher;
 import edu.wpi.first.networktables.DoublePublisher;
-
-import java.lang.reflect.Array;
 
 // Imports for sensors, motors, and inputs - comment what each import is for
 import com.kauailabs.navx.frc.AHRS; // navX-MXP IMU that has a useful gyroscope
@@ -59,8 +56,7 @@ import com.revrobotics.CANSparkMaxLowLevel.MotorType; // Initializes motor types
 public class Robot extends TimedRobot {
     // Autonomous
     private static final String kDefaultAuto = "Default";
-    private static final String kCustomAuto = "My Auto";
-    private static final String kAutobalance = "Autobalance";
+    private static final String kAutobalance = "Auto-balance Robot";
     private String m_autoSelected;
     private final SendableChooser<String> m_chooser = new SendableChooser<>();
 
@@ -198,7 +194,6 @@ public class Robot extends TimedRobot {
 
         // Initialize robot
         m_chooser.setDefaultOption("Default Auto", kDefaultAuto);
-        m_chooser.addOption("My Auto", kCustomAuto);
         m_chooser.addOption("Autobalance", kAutobalance);
 
         SmartDashboard.putData("Auto choices", m_chooser);
@@ -268,8 +263,6 @@ public class Robot extends TimedRobot {
     @Override
     public void autonomousPeriodic() {
         switch (m_autoSelected) {
-            case kCustomAuto:                                
-                break;
             case kAutobalance:
                 if (autonState == 0 && Math.abs(navX_gyro.getRoll()) > 2.5) {
                     autonState++;
@@ -293,6 +286,7 @@ public class Robot extends TimedRobot {
                 } 
                 
                 break;
+
             case kDefaultAuto:
             default:
                 double autonRotations = drive_encoder.getPosition();
