@@ -20,6 +20,8 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard; // Debug use only on
 
 // WPILib Object Libraries and Inputs
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;                 // To use arcade drive
+import edu.wpi.first.wpilibj.event.BooleanEvent;
+import edu.wpi.first.wpilibj.event.EventLoop;
 import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;       // Conjoins two motors as one
 import edu.wpi.first.wpilibj.DigitalInput;                            // Limit Switch interface for the robot's arm
 import edu.wpi.first.wpilibj.Joystick;                                // Joystick interface for controlling the robot
@@ -116,9 +118,9 @@ public class Robot extends TimedRobot {
 
     // GLOBAL FOR SMART DASHBOARD.
     private double drivePower[] = {0.25, 0.5, 0.7};
-    private double max_drivePower = drivePower[0]; // Base maximum power for driving the robot
-    private double drive_turnRate = 0.75;
-    public int current_gear = 1;
+    private int selectPower = 0;
+    private double max_drivePower = drivePower[selectPower]; // Base maximum power for driving the robot
+    private double drive_turnRate = 0.75;;
     private double max_armPower = 0.2;
     private double gripperPower = 0.1;
     private boolean limitSwitch_override = true; // IF LIMIT SWITCH BREAKS, SET TO TRUE ON SMARTDASHBOARD OR HERE.
@@ -130,7 +132,8 @@ public class Robot extends TimedRobot {
     public double abMaxAngle = 15.0;
     public double abMinAngle = 2.5;
     public double abMaxPower = 0.35;
-    
+    private EventLoop looper = new EventLoop();
+    public BooleanEvent shiftGear = new BooleanEvent(looper, controller::getL3Button);
 
     // Logging and debugging utilities
     public NetworkTableInstance inst = NetworkTableInstance.getDefault();
@@ -154,6 +157,9 @@ public class Robot extends TimedRobot {
     public double turn_angle = 0.0;
     public double arm_preset_value = 0.0;
 
+    public boolean button_held = false;
+
+    Thread camera_process;
 
     /*
      * Important commands for getting user input:
@@ -215,6 +221,27 @@ public class Robot extends TimedRobot {
         motor_gripper.restoreFactoryDefaults();
 
         CameraServer.startAutomaticCapture();
+
+        // Upon clicking the left stick, the robot will "shift gears", or switch through speeds.
+        shiftGear.ifHigh(() -> {
+        if (controller.getL3ButtonPressed() == true) {
+            button_held = true;
+        if (selectPower < 2) {
+            selectPower++;
+        } else {
+            selectPower = 0;
+        }
+        max_drivePower = drivePower[selectPower];
+        controller.setRumble(RumbleType.kBothRumble, max_drivePower);
+        try {
+            Thread.sleep(100);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        controller.setRumble(RumbleType.kBothRumble, 0);
+        System.out.println("SHIFT GEAR");
+        } 
+        });
     }
 
     @Override
@@ -244,23 +271,27 @@ public class Robot extends TimedRobot {
             case kCustomAuto:                                
                 break;
             case kAutobalance:
-                boolean balanced = false;
-                float time_balanced = 0;
-                if (Math.abs(navX_gyro.getRoll()) < 2.5) {
-                    robot.arcadeDrive(0.25, 0); 
+                if (autonState == 0 && Math.abs(navX_gyro.getRoll()) > 2.5) {
+                    autonState++;
+                } else if (autonState == 1 && (navX_gyro.getRoll() < -2.5)) {
+                    autonState++;
                 }
-                else if (balanced == false) {
+
+                switch(autonState){
+                    case 0:
+                    robot.arcadeDrive(0.4, 0); 
+                    break;
+                    
+                    case 1:
+                    robot.arcadeDrive(0.2, 0); 
+                    break;
+
+                    case 2:
                     autobalance_power = autobalance_robot(navX_gyro.getRoll());
                     robot.arcadeDrive(autobalance_power, 0);
-                    if (autobalance_power == 0) {
-                        time_balanced++;
-                    }
-                    if (time_balanced == 10000) {
-                        System.out.println("Robot is balanced :)");
-                        balanced = true;
-        
-                    } 
+                    break;
                 } 
+                
                 break;
             case kDefaultAuto:
             default:
@@ -325,29 +356,25 @@ public class Robot extends TimedRobot {
         limitSwitch_override = SmartDashboard.getBoolean("Forward Limit Enabled", false);
 
         // Driving the robot, allowing support for twisting and moving stick left and right.
-        move_robot(controller.getLeftY(), controller.getLeftX(), current_gear);
+        move_robot(controller.getLeftY(), controller.getLeftX(), max_drivePower);
+        move_robot((-controller.getL2Axis() + controller.getR2Axis()) * max_drivePower, controller.getLeftX(), max_drivePower);
+ 
+        // Presets for the arm
+        if (controller.getPOV() <= 180 && controller.getPOV() != -1 && arm_preset != true) {
+            arm_preset = true;
+            if (controller.getPOV() == 0) {
+                arm_preset_value = presetRotations[2];
+            } else if (controller.getPOV() == 90) {
+                arm_preset_value = presetRotations[1];
+            } else if (controller.getPOV() == 180) {
+                arm_preset_value = presetRotations[0];
+            }  
+            System.out.printf("Set rotation to %f%n", arm_preset_value);
+        }
 
-        
-        // // Redesigned preset code: detects if any of the buttons are pressed
-        // if (arm_joystick.getRawButton(8) == true || 
-        //     arm_joystick.getRawButton(10) == true || 
-        //     arm_joystick.getRawButton(12) == true) {
-        //         arm_preset = true; // Upon the button being pressed, it tells the robot to ignore stick input.
-        //         // The button pressed determines where the robot should go. 
-        //         if (arm_joystick.getRawButton(8) == true) {
-        //             presetRotation = -30;
-        //         } else if (arm_joystick.getRawButton(10) == true) {
-        //             presetRotation = -15;
-        //         } else if (arm_joystick.getRawButton(12) == true) {
-        //             presetRotation = -5;
-        //         }
-        // }
-
-        // Preset code for single controller
-        // if (controller.getTopPressed() == true || controller.get)
-
-        // move_robot_arm(controller.getRightY(), presetRotation);
+        move_robot_arm(controller.getRightY(), arm_preset_value);
         toggle_gripper(controller.getR1Button(), controller.getL1Button());
+        looper.poll(); // Allows for shifting gears to work :)
     }
 
     /**
@@ -379,7 +406,7 @@ public class Robot extends TimedRobot {
     public void testPeriodic() {
         limitSwitch_override = SmartDashboard.getBoolean("Forward Limit Enabled", false);
         double movement = (-controller.getL2Axis() + controller.getR2Axis()) * max_drivePower;
-        move_robot(movement, controller.getLeftX(), current_gear);
+        move_robot(movement, controller.getLeftX(), max_drivePower);
 
         // Presets for the arm
         if (controller.getPOV() <= 180 && controller.getPOV() != -1 && arm_preset != true) {
@@ -396,7 +423,8 @@ public class Robot extends TimedRobot {
         
         move_robot_arm(controller.getRightY(), arm_preset_value);
         toggle_gripper(controller.getR1Button(), controller.getL1Button());
-        shift_gear();
+        looper.poll();
+
     }
 
     /**
@@ -425,9 +453,7 @@ public class Robot extends TimedRobot {
 
     // This incorporates shifting gear instead of the slider.
     public void move_robot(double move, double turn, double gear) {
-        double speed = max_drivePower * gear;
-
-        robot.arcadeDrive(move * speed, turn * speed);
+        robot.arcadeDrive(move * gear, turn * gear);
     }
 
     public double autobalance_robot(double source) {
@@ -500,13 +526,4 @@ public class Robot extends TimedRobot {
           motor_gripper.set(0);
         }
     }
-
-    public void shift_gear() {
-        // There is haptic feedback (controller vibration) and visual feedback
-        // If you do not like controller vibration comment out this line by pressing "CTRL" + "/"
-
-        controller.setRumble(RumbleType.kLeftRumble, max_drivePower);
-        
-    }
-
 }
