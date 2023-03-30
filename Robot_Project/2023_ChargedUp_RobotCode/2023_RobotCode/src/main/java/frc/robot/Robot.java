@@ -198,10 +198,10 @@ public class Robot extends TimedRobot {
 
         SmartDashboard.putData("Auto choices", m_chooser);
         SmartDashboard.putData("PID", rotate_to);
-        SmartDashboard.putNumber("Arm Position (Encoder)", arm_encoder.getPosition());
+        SmartDashboard.putNumber("Arm Position (Encoder)", Math.abs(arm_encoder.getPosition()));
         SmartDashboard.putNumber("Gripper Position (Encoder)", gripper_encoder.getPosition());
 
-        toggle_limit_switch.set(limitSwitch_override);
+        toggle_limit_switch.set(!limitSwitch_override);
         nt_drivePower.set(max_drivePower);
         nt_abMaxAngle.set(abMaxAngle);
         nt_abMinAngle.set(abMinAngle);
@@ -403,7 +403,7 @@ public class Robot extends TimedRobot {
         move_robot(movement, controller.getLeftX(), max_drivePower);
 
         // Presets for the arm
-        if (controller.getPOV() <= 180 && controller.getPOV() != -1 && arm_preset != true) {
+        if (controller.getPOV() <= 180 && controller.getPOV() != -1 && arm_preset = true) {
             arm_preset = true;
             if (controller.getPOV() == 0) {
                 arm_preset_value = presetRotations[2];
