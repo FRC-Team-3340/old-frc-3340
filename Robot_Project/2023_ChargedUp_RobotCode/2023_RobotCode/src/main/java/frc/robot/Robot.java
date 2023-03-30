@@ -127,7 +127,7 @@ public class Robot extends TimedRobot {
     // Autobalance Smart Dashboard compatibility
     public double abMaxAngle = 15.0;
     public double abMinAngle = 2.5;
-    public double abMaxPower = 0.35;
+    public double abMaxPower = 0.25;
     private EventLoop looper = new EventLoop();
     public BooleanEvent shiftGear = new BooleanEvent(looper, controller::getL3Button);
 
@@ -453,16 +453,16 @@ public class Robot extends TimedRobot {
     public double autobalance_robot(double source) {
         // DO NOT CHANGE
         double autobalanceAxis = source;
-        double output_power = 0;
+        double output_power = 0.0;
 
         if (autobalanceAxis > abMaxAngle) {
             output_power = -abMaxPower;
         } else if (autobalanceAxis < -abMaxAngle) {
-            output_power = abMaxPower/1.25;
+            output_power = abMaxPower;
         } else if (autobalanceAxis > abMinAngle) {
             output_power = -(abMaxPower * ((autobalanceAxis - abMinAngle) / (abMaxAngle - abMinAngle)));
         } else if (autobalanceAxis < -abMinAngle) {
-            output_power = (abMaxPower/1.25 * ((autobalanceAxis + abMinAngle) / (-abMaxAngle + abMinAngle)));
+            output_power = (abMaxPower * ((autobalanceAxis + abMinAngle) / (-abMaxAngle + abMinAngle)));
         } else {
             output_power = 0;
         }
