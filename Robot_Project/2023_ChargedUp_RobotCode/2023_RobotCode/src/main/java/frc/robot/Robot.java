@@ -119,7 +119,7 @@ public class Robot extends TimedRobot {
     private double drive_turnRate = 0.75;;
     private double max_armPower = 0.2;
     private double gripperPower = 0.1;
-    private boolean limitSwitch_override = true; // IF LIMIT SWITCH BREAKS, SET TO TRUE ON SMARTDASHBOARD OR HERE.
+    private boolean useLimitSwitches = true; // IF LIMIT SWITCH BREAKS, SET TO TRUE ON SMARTDASHBOARD OR HERE.
     
     private double presetRotations[] = {-5.0, -15.0, -30.0};
     private boolean arm_preset = false;
@@ -134,7 +134,7 @@ public class Robot extends TimedRobot {
     // Logging and debugging utilities
     public NetworkTableInstance inst = NetworkTableInstance.getDefault();
     public NetworkTable stats_table = inst.getTable("SmartDashboard");
-    public BooleanPublisher toggle_limit_switch = stats_table.getBooleanTopic("Disable Limit Switches").publish();
+    public BooleanPublisher toggle_limit_switch = stats_table.getBooleanTopic("Use Limit Switches").publish();
     public DoublePublisher nt_armPower = stats_table.getDoubleTopic("Arm Power").publish();
     public DoublePublisher nt_drivePower = stats_table.getDoubleTopic("Drive Power").publish();
     public DoublePublisher nt_abMaxAngle = stats_table.getDoubleTopic("Autobalance - Maximum Angle").publish();
@@ -201,7 +201,7 @@ public class Robot extends TimedRobot {
         SmartDashboard.putNumber("Arm Position (Encoder)", Math.abs(arm_encoder.getPosition()));
         SmartDashboard.putNumber("Gripper Position (Encoder)", gripper_encoder.getPosition());
 
-        toggle_limit_switch.set(!limitSwitch_override);
+        toggle_limit_switch.set(useLimitSwitches);
         nt_drivePower.set(max_drivePower);
         nt_abMaxAngle.set(abMaxAngle);
         nt_abMinAngle.set(abMinAngle);
@@ -347,7 +347,7 @@ public class Robot extends TimedRobot {
      */
     @Override
     public void teleopPeriodic() {
-        limitSwitch_override = SmartDashboard.getBoolean("Forward Limit Enabled", false);
+        useLimitSwitches = SmartDashboard.getBoolean("Forward Limit Enabled", true);
 
         // Driving the robot, allowing support for twisting and moving stick left and right.
         move_robot(controller.getLeftY(), controller.getLeftX(), max_drivePower);
@@ -398,12 +398,12 @@ public class Robot extends TimedRobot {
     /* This function is called periodically during test mode. */
     @Override
     public void testPeriodic() {
-        limitSwitch_override = SmartDashboard.getBoolean("Forward Limit Enabled", false);
+        useLimitSwitches = SmartDashboard.getBoolean("Forward Limit Enabled", true);
         double movement = (-controller.getL2Axis() + controller.getR2Axis()) * max_drivePower;
         move_robot(movement, controller.getLeftX(), max_drivePower);
 
         // Presets for the arm
-        if (controller.getPOV() <= 180 && controller.getPOV() != -1 && arm_preset = true) {
+        if (controller.getPOV() <= 180 && controller.getPOV() != -1 && arm_preset == true) {
             arm_preset = true;
             if (controller.getPOV() == 0) {
                 arm_preset_value = presetRotations[2];
@@ -486,7 +486,7 @@ public class Robot extends TimedRobot {
             }
         } else {
             arm_preset = false;
-            if ((reverse_switch.get() == true || forwards_switch.get() == true )&& limitSwitch_override == false) {
+            if ((reverse_switch.get() == true || forwards_switch.get() == true )&& useLimitSwitches != false) {
                 motor_arm.set(0.0); // stops if limit is hit
             } else if (Math.abs(input) > deadzone) {
                 if (reverse_switch.get() == true && input < 0) {
