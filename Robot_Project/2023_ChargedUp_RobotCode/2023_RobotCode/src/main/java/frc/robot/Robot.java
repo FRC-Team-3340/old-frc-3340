@@ -486,9 +486,10 @@ public class Robot extends TimedRobot {
             }
         } else {
             arm_preset = false;
-            if ((reverse_switch.get() == true || forwards_switch.get() == true) && limitSwitch_override == false) {
+            if (reverse_switch.get() == true && limitSwitch_override == false) {
                 motor_arm.set(0.0); 
-                // System.out.println(input);
+            } else if (forwards_switch.get() == true && limitSwitch_override == false) {
+                motor_arm.set(0.0); 
             } else if (Math.abs(input) > deadzone) {
                 motor_arm.set(input * max_armPower);
             } else {
