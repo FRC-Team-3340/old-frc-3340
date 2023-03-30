@@ -500,7 +500,7 @@ public class Robot extends TimedRobot {
             }
         }
     }
-
+    // boop
     public void toggle_gripper(boolean close, boolean open) {
         if (close == true && open == false) {
 
