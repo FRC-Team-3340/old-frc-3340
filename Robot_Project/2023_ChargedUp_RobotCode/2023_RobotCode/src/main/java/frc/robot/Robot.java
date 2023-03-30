@@ -486,16 +486,23 @@ public class Robot extends TimedRobot {
             }
         } else {
             arm_preset = false;
-            if (reverse_switch.get() == true && limitSwitch_override == false) {
-                motor_arm.set(0.0); 
-            } else if (forwards_switch.get() == true && limitSwitch_override == false) {
-                motor_arm.set(0.0); 
+            if ((reverse_switch.get() == true || forwards_switch.get() == true )&& limitSwitch_override == false) {
+                motor_arm.set(0.0); // stops if limit is hit
             } else if (Math.abs(input) > deadzone) {
-                motor_arm.set(input * max_armPower);
+                if (reverse_switch.get() == true && input < 0) {
+                    motor_arm.set( -Math.abs(input) * max_armPower); // allows for movement in one direction
+                } else if (forwards_switch.get() == true && input > 0){
+                    motor_arm.set(Math.abs(input) * max_armPower); // allows for movement in one direction
+                } else {
+                    motor_arm.set(input * max_armPower); // move according to joystick
+                }
             } else {
-                motor_arm.set(-idle_power); 
+                motor_arm.set(-idle_power); // idle if no input
             }
         }
+
+        
+
     }
     // boop
     public void toggle_gripper(boolean close, boolean open) {
