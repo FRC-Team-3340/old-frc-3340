@@ -24,7 +24,6 @@ import edu.wpi.first.wpilibj.event.EventLoop;
 import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;       // Conjoins two motors as one
 import edu.wpi.first.wpilibj.DigitalInput;                            // Limit Switch interface for the robot's arm
 import edu.wpi.first.wpilibj.Joystick;                                // Joystick interface for controlling the robot
-import edu.wpi.first.wpilibj.PS4Controller;
 import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.math.controller.PIDController;
 
@@ -82,7 +81,8 @@ public class Robot extends TimedRobot {
     private AHRS navX_gyro = new AHRS(SPI.Port.kMXP); // navX gyroscope object, SPI-MXP
     
     // Uncomment which one you need.
-    private PS4Controller controller = new PS4Controller(0); // Create joystick interface object
+    private Joystick driving_joystick = new Joystick(0); // Create joystick interface object
+    private Joystick arm_Joystick = new Joystick(1);
     // private XboxController controller = new XboxController(0);
 
     /* All of these have been merged to one controller, preferably a PS4 controller */
@@ -113,9 +113,7 @@ public class Robot extends TimedRobot {
     public Servo gripperServo = new Servo(0);
 
     // GLOBAL FOR SMART DASHBOARD.
-    private double drivePower[] = {0.25, 0.5, 0.7};
-    private int selectPower = 0;
-    private double max_drivePower = drivePower[selectPower]; // Base maximum power for driving the robot
+    private double max_drivePower = 0.7; // Base maximum power for driving the robot
     private double drive_turnRate = 0.75;;
     private double max_armPower = 0.2;
     private double gripperPower = 0.1;
@@ -128,8 +126,6 @@ public class Robot extends TimedRobot {
     public double abMaxAngle = 15.0;
     public double abMinAngle = 2.5;
     public double abMaxPower = 0.25;
-    private EventLoop looper = new EventLoop();
-    public BooleanEvent shiftGear = new BooleanEvent(looper, controller::getL3Button);
 
     // Logging and debugging utilities
     public NetworkTableInstance inst = NetworkTableInstance.getDefault();
@@ -218,25 +214,6 @@ public class Robot extends TimedRobot {
         CameraServer.startAutomaticCapture();
 
         // Upon clicking the left stick, the robot will "shift gears", or switch through speeds.
-        shiftGear.ifHigh(() -> {
-        if (controller.getL3ButtonPressed() == true) {
-            button_held = true;
-        if (selectPower < 2) {
-            selectPower++;
-        } else {
-            selectPower = 0;
-        }
-        max_drivePower = drivePower[selectPower];
-        controller.setRumble(RumbleType.kBothRumble, max_drivePower);
-        try {
-            Thread.sleep(100);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        controller.setRumble(RumbleType.kBothRumble, 0);
-        System.out.println("SHIFT GEAR");
-        } 
-        });
     }
 
     @Override
@@ -350,25 +327,26 @@ public class Robot extends TimedRobot {
         useLimitSwitches = SmartDashboard.getBoolean("Forward Limit Enabled", true);
 
         // Driving the robot, allowing support for twisting and moving stick left and right.
-        move_robot(controller.getLeftY(), controller.getLeftX(), max_drivePower);
-        move_robot((-controller.getL2Axis() + controller.getR2Axis()) * max_drivePower, controller.getLeftX(), max_drivePower);
+        move_robot(driving_joystick.getY(), driving_joystick.getX(), (driving_joystick.getZ()/2 + 1));
  
         // Presets for the arm
-        if (controller.getPOV() <= 180 && controller.getPOV() != -1 && arm_preset != true) {
+        if (arm_Joystick.getRawButtonPressed(8) && 
+            arm_Joystick.getRawButtonPressed(10) && 
+            arm_Joystick.getRawButtonPressed(12) &&
+            arm_preset != true) {
             arm_preset = true;
-            if (controller.getPOV() == 0) {
+            if (arm_Joystick.getRawButtonPressed(8)) {
                 arm_preset_value = presetRotations[2];
-            } else if (controller.getPOV() == 90) {
+            } else if (arm_Joystick.getRawButtonPressed(10)) {
                 arm_preset_value = presetRotations[1];
-            } else if (controller.getPOV() == 180) {
+            } else if (arm_Joystick.getRawButtonPressed(12)) {
                 arm_preset_value = presetRotations[0];
             }  
             System.out.printf("Set rotation to %f%n", arm_preset_value);
         }
 
-        move_robot_arm(controller.getRightY(), arm_preset_value);
-        toggle_gripper(controller.getR1Button(), controller.getL1Button());
-        looper.poll(); // Allows for shifting gears to work :)
+        move_robot_arm(arm_Joystick.getY(), arm_preset_value);
+        toggle_gripper(arm_Joystick.getRawButton(1), arm_Joystick.getRawButton(2));
     }
 
     /**
@@ -399,26 +377,6 @@ public class Robot extends TimedRobot {
     @Override
     public void testPeriodic() {
         useLimitSwitches = SmartDashboard.getBoolean("Forward Limit Enabled", true);
-        double movement = (-controller.getL2Axis() + controller.getR2Axis()) * max_drivePower;
-        move_robot(movement, controller.getLeftX(), max_drivePower);
-
-        // Presets for the arm
-        if (controller.getPOV() <= 180 && controller.getPOV() != -1 && arm_preset == true) {
-            arm_preset = true;
-            if (controller.getPOV() == 0) {
-                arm_preset_value = presetRotations[2];
-            } else if (controller.getPOV() == 90) {
-                arm_preset_value = presetRotations[1];
-            } else if (controller.getPOV() == 180) {
-                arm_preset_value = presetRotations[0];
-            }  
-            System.out.printf("Set rotation to %f%n", arm_preset_value);
-        }
-        
-        move_robot_arm(controller.getRightY(), arm_preset_value);
-        toggle_gripper(controller.getR1Button(), controller.getL1Button());
-        looper.poll();
-
     }
 
     /**
