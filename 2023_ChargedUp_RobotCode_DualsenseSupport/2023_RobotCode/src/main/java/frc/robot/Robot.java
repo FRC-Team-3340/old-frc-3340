@@ -498,9 +498,7 @@ public void move_robot_arm(double input, double target, double armTargetSpeed) {
         if ((reverse_switch.get() == true || forwards_switch.get() == true) && useLimitSwitches != false) {
             System.out.println(useLimitSwitches);
             motor_arm.set(0.0); // stops if limit is hit
-            System.out.println("wtf");
         } else if (Math.abs(input) > deadzone) {
-            System.out.println("This should work :)");
             if (reverse_switch.get() == true && input < 0) {
                 motor_arm.set( -Math.abs(input) * max_armPower); // allows for movement in one direction
             } else if (forwards_switch.get() == true && input > 0){
