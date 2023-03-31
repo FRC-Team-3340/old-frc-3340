@@ -120,7 +120,7 @@ public class Robot extends TimedRobot {
     private double drive_turnRate = 0.75;;
     private double max_armPower = 0.2;
     private double gripperPower = 0.1;
-    private boolean useLimitSwitches = true; // IF LIMIT SWITCH BREAKS, SET TO TRUE ON SMARTDASHBOARD OR HERE.
+    private boolean useLimitSwitches = false; // IF LIMIT SWITCH BREAKS, SET TO TRUE ON SMARTDASHBOARD OR HERE.
     
     private double presetRotations[] = {-5.0, -15.0, -30.0};
     private boolean arm_preset = false;
@@ -153,6 +153,7 @@ public class Robot extends TimedRobot {
     public double drive_distance = 0.0; // IN INCHES
     public double turn_angle = 0.0;
     public double arm_preset_value = 0.0;
+    public double armTargetSpeed = 0.0;
 
     public boolean button_held = false;
 
@@ -292,9 +293,11 @@ public class Robot extends TimedRobot {
             default:
                 double autonRotations = drive_encoder.getPosition();
                 double autonTurn = navX_gyro.getYaw();
-
+                // System.out.println(autonState);
+                // System.out.println(autonRotations);
                 // distance * (42cts * 14gearRatio)/(6in*PI) = encoder Cts
                 // Copy this for each step in autonomous period
+                System.out.println(autonRotations - autonStartingPostion);
                 if (autonState == 0) {
                     drive_distance = 18; // 18 in drive distance for this step
                     if (autonRotations - autonStartingPostion > (drive_distance * (42 * 14) / (6 * Math.PI))) {
@@ -302,7 +305,7 @@ public class Robot extends TimedRobot {
                         autonStartingPostion = drive_encoder.getPosition();
                     } else {
                         robot.arcadeDrive(-0.25, 0); // Speed for this step
-                        System.out.printf("%-20f%f%n", autonStartingPostion, (drive_distance * (42 * 14) / (6 * Math.PI)), autonRotations);
+                        System.out.printf("%-20f%f%n", autonStartingPostion, (drive_distance * (42 * 14) / (6 * Math.PI)), drive_encoder.getPosition());
                     }
                 }
                 if (autonState == 1) {
@@ -348,7 +351,7 @@ public class Robot extends TimedRobot {
      */
     @Override
     public void teleopPeriodic() {
-        useLimitSwitches = SmartDashboard.getBoolean("Forward Limit Enabled", true);
+        useLimitSwitches = SmartDashboard.getBoolean("Forward Limit Enabled", false);
 
         // Driving the robot, allowing support for twisting and moving stick left and right.
         move_robot(controller.getLeftY(), controller.getLeftX(), max_drivePower);
@@ -364,10 +367,11 @@ public class Robot extends TimedRobot {
             } else if (controller.getPOV() == 180) {
                 arm_preset_value = presetRotations[0];
             }  
+            armTargetSpeed = rotate_to.calculate(arm_encoder.getPosition(), arm_preset_value);
             System.out.printf("Set rotation to %f%n", arm_preset_value);
         }
 
-        move_robot_arm(controller.getRightY(), arm_preset_value);
+        move_robot_arm(controller.getRightY(), arm_preset_value, armTargetSpeed);
         toggle_gripper(controller.getR1Button(), controller.getL1Button());
         looper.poll(); // Allows for shifting gears to work :)
     }
@@ -416,7 +420,7 @@ public class Robot extends TimedRobot {
             System.out.printf("Set rotation to %f%n", arm_preset_value);
         }
         
-        move_robot_arm(controller.getRightY(), arm_preset_value);
+        // move_robot_arm(controller.getRightY(), arm_preset_value);
         toggle_gripper(controller.getR1Button(), controller.getL1Button());
         looper.poll();
 
@@ -471,29 +475,32 @@ public class Robot extends TimedRobot {
         return output_power;
     }
 
-    public void move_robot_arm(double input, double target) {
+    public void move_robot_arm(double input, double target, double armTargetSpeed) {
         double preset_margin = 1; // Set the margin of error for the presets
         /*Example: If your preset is set to go to -36, it should stop between -35.0 and -37.0. */
         double deadzone = 0.1;      // Set joystick deadzone to prevent drift
         double idle_power = 0.05;   // Set power enough so that the arm holds up but does not sag.
+        System.out.println(input);
 
         if (arm_preset == true) {
             motor_arm.setIdleMode(IdleMode.kCoast);
-            double armTargetSpeed = rotate_to.calculate(arm_encoder.getPosition(), target);
-            if (armTargetSpeed > max_armPower) armTargetSpeed = max_armPower;
-            if (armTargetSpeed < -max_armPower) armTargetSpeed = -max_armPower;
+            if (armTargetSpeed > max_armPower) armTargetSpeed = max_armPower/2;
+            if (armTargetSpeed < -max_armPower) armTargetSpeed = -max_armPower/2;
             if (arm_encoder.getPosition() < target - preset_margin || arm_encoder.getPosition() > target + preset_margin){
                 motor_arm.set(armTargetSpeed);
             } else {
                 arm_preset = false;
                 motor_arm.setIdleMode(IdleMode.kBrake);
-                motor_arm.set(-idle_power); // idle if no input
+                motor_arm.set(idle_power); // idle if no input
             }
-        } else {
+        } else if (arm_preset == false) {
             arm_preset = false;
-            if ((reverse_switch.get() == true || forwards_switch.get() == true )&& useLimitSwitches != false) {
+            if ((reverse_switch.get() == true || forwards_switch.get() == true) && useLimitSwitches != false) {
+                System.out.println(useLimitSwitches);
                 motor_arm.set(0.0); // stops if limit is hit
+                System.out.println("wtf");
             } else if (Math.abs(input) > deadzone) {
+                System.out.println("This should work :)");
                 if (reverse_switch.get() == true && input < 0) {
                     motor_arm.set( -Math.abs(input) * max_armPower); // allows for movement in one direction
                 } else if (forwards_switch.get() == true && input > 0){
@@ -502,7 +509,7 @@ public class Robot extends TimedRobot {
                     motor_arm.set(input * max_armPower); // move according to joystick
                 }
             } else {
-                motor_arm.set(-idle_power); // idle if no input
+                motor_arm.set(idle_power); // idle if no input
             }
         }
     }
