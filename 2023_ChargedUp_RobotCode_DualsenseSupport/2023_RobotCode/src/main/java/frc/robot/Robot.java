@@ -3,8 +3,8 @@
 // the WPILib BSD license file in the root directory of this project.
 
 /*
-    * Migrating to PS5 single-player control. 
- */
+* Migrating to PS5 single-player control. 
+*/
 
 
 package frc.robot;
@@ -44,15 +44,15 @@ import com.revrobotics.CANSparkMaxLowLevel.MotorType; // Initializes motor types
 
 /**
  * The VM is configured to automatically run this class, and to call the
- * functions corresponding to
- * each mode, as described in the TimedRobot documentation. If you change the
- * name of this class or
- * the package after creating this project, you must also update the
- * build.gradle file in the
- * project.
- */
+* functions corresponding to
+* each mode, as described in the TimedRobot documentation. If you change the
+* name of this class or
+* the package after creating this project, you must also update the
+* build.gradle file in the
+* project.
+*/
 
- // UNLESS ABSOLUTELY NECCESARY, DO NOT CHANGE ANYTHING DEEMED "FINAL"
+// UNLESS ABSOLUTELY NECCESARY, DO NOT CHANGE ANYTHING DEEMED "FINAL"
 
 public class Robot extends TimedRobot {
     // Autonomous
@@ -160,33 +160,33 @@ public class Robot extends TimedRobot {
     Thread camera_process;
 
     /*
-     * Important commands for getting user input:
-     * joystick.getX(), .getY(), .getZ()
-     * --> get input from the joystick: tilting forward/back, side to side, and
-     * twisting respectively.
-     * --> returns a double
-     *
-     * joystick.getRawAxis(axis)
-     * --> get input from another axis on the joystick. Use axis 3 for the slider on
-     * the flight stick.
-     * --> returns a double
-     *
-     * joystick.getRawButton(button)
-     * --> gets the state (pressed/unpressed) of a button on the joystick (1-16).
-     * --> returns a boolean, can be converted to integer by writing this code,
-     * replacing the pseudocode:
-     * *this_button* = *joystick*.getRawButton(*button*)
-     *
-     * gyro.getYaw(), .getPitch(), .getRoll()
-     * --> gets the yaw, pitch, or roll input of the gyroscope (tilt).
-     * --> returns a double
-     */
+    * Important commands for getting user input:
+    * joystick.getX(), .getY(), .getZ()
+    * --> get input from the joystick: tilting forward/back, side to side, and
+    * twisting respectively.
+    * --> returns a double
+    *
+    * joystick.getRawAxis(axis)
+    * --> get input from another axis on the joystick. Use axis 3 for the slider on
+    * the flight stick.
+    * --> returns a double
+    *
+    * joystick.getRawButton(button)
+    * --> gets the state (pressed/unpressed) of a button on the joystick (1-16).
+    * --> returns a boolean, can be converted to integer by writing this code,
+    * replacing the pseudocode:
+    * *this_button* = *joystick*.getRawButton(*button*)
+    *
+    * gyro.getYaw(), .getPitch(), .getRoll()
+    * --> gets the yaw, pitch, or roll input of the gyroscope (tilt).
+    * --> returns a double
+    */
 
     /**
      * This function is run when the robot is first started up and should be used
-     * for any
-     * initialization code.
-     */
+    * for any
+    * initialization code.
+    */
 
     @Override
     public void robotInit() {
@@ -261,7 +261,7 @@ public class Robot extends TimedRobot {
 
     /**
      * This function is called periodically during autonomous.
-     */
+    */
     @Override
     public void autonomousPeriodic() {
         switch (m_autoSelected) {
@@ -340,7 +340,7 @@ public class Robot extends TimedRobot {
 
     /**
      * This function is called once when teleop is enabled.
-     */
+    */
     @Override
     public void teleopInit() {
         gripper_encoder.setPosition(0);
@@ -348,7 +348,7 @@ public class Robot extends TimedRobot {
 
     /**
      * This function is called periodically during operator control.
-     */
+    */
     @Override
     public void teleopPeriodic() {
         useLimitSwitches = SmartDashboard.getBoolean("Forward Limit Enabled", false);
@@ -356,7 +356,7 @@ public class Robot extends TimedRobot {
         // Driving the robot, allowing support for twisting and moving stick left and right.
         move_robot(controller.getLeftY(), controller.getLeftX(), max_drivePower);
         move_robot((controller.getL2Axis() + -controller.getR2Axis()) * max_drivePower, controller.getLeftX(), max_drivePower);
- 
+
         // Presets for the arm
         if (controller.getPOV() <= 180 && controller.getPOV() != -1 && arm_preset != true) {
             arm_preset = true;
@@ -378,7 +378,7 @@ public class Robot extends TimedRobot {
 
     /**
      * This function is called once when the robot is disabled.
-     */
+    */
     @Override
     public void disabledInit() {
 
@@ -386,7 +386,7 @@ public class Robot extends TimedRobot {
 
     /**
      * This function is called periodically when disabled.
-     */
+    */
     @Override
     public void disabledPeriodic() {
         
@@ -394,7 +394,7 @@ public class Robot extends TimedRobot {
 
     /**
      * This function is called once when test mode is enabled.
-     */
+    */
     @Override
     public void testInit() {
         // arm_encoder.setPosition(0);
@@ -428,7 +428,7 @@ public class Robot extends TimedRobot {
 
     /**
      * This function is called once when the robot is first started up.
-     */
+    */
     @Override
     public void simulationInit() {
         // double tiltAxis = robot_joystick.getY() * 15; // DEBUG: Emulate gyroscope
@@ -437,7 +437,7 @@ public class Robot extends TimedRobot {
 
     /**
      * This function is called periodically whilst in simulation.
-     */
+    */
     @Override
     public void simulationPeriodic() {
 
@@ -532,9 +532,9 @@ public class Robot extends TimedRobot {
                 ex.printStackTrace();
             }
 
-           motor_gripper.set(-gripperPower);
+        motor_gripper.set(-gripperPower);
         } else {
-          motor_gripper.set(0);
+        motor_gripper.set(0);
         }
     }
 }
