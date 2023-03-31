@@ -39,6 +39,7 @@ import com.kauailabs.navx.frc.AHRS; // navX-MXP IMU that has a useful gyroscope
 import com.revrobotics.CANSparkMax; // Spark MAX motor controller
 import edu.wpi.first.wpilibj.Servo  ;
 import com.revrobotics.RelativeEncoder;
+import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType; // Initializes motor types of the Spark MAX motors.
 
 /**
@@ -351,7 +352,7 @@ public class Robot extends TimedRobot {
 
         // Driving the robot, allowing support for twisting and moving stick left and right.
         move_robot(controller.getLeftY(), controller.getLeftX(), max_drivePower);
-        move_robot((-controller.getL2Axis() + controller.getR2Axis()) * max_drivePower, controller.getLeftX(), max_drivePower);
+        move_robot((controller.getL2Axis() + -controller.getR2Axis()) * max_drivePower, controller.getLeftX(), max_drivePower);
  
         // Presets for the arm
         if (controller.getPOV() <= 180 && controller.getPOV() != -1 && arm_preset != true) {
@@ -477,6 +478,7 @@ public class Robot extends TimedRobot {
         double idle_power = 0.05;   // Set power enough so that the arm holds up but does not sag.
 
         if (arm_preset == true) {
+            motor_arm.setIdleMode(IdleMode.kCoast);
             double armTargetSpeed = rotate_to.calculate(arm_encoder.getPosition(), target);
             if (armTargetSpeed > max_armPower) armTargetSpeed = max_armPower;
             if (armTargetSpeed < -max_armPower) armTargetSpeed = -max_armPower;
@@ -484,6 +486,7 @@ public class Robot extends TimedRobot {
                 motor_arm.set(armTargetSpeed);
             } else {
                 arm_preset = false;
+                motor_arm.setIdleMode(IdleMode.kBrake);
                 motor_arm.set(-idle_power); // idle if no input
             }
         } else {
