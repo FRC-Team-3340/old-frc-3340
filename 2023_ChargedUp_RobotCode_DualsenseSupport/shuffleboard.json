@@ -1,0 +1,162 @@
+{
+  "tabPane": [
+    {
+      "title": "LiveWindow",
+      "autoPopulate": true,
+      "autoPopulatePrefix": "LiveWindow/",
+      "widgetPane": {
+        "gridSize": 128.0,
+        "showGrid": true,
+        "hgap": 16.0,
+        "vgap": 16.0,
+        "titleType": 0,
+        "tiles": {}
+      }
+    },
+    {
+      "title": "Tab 2",
+      "autoPopulate": false,
+      "autoPopulatePrefix": "",
+      "widgetPane": {
+        "gridSize": 32.0,
+        "showGrid": true,
+        "hgap": 16.0,
+        "vgap": 16.0,
+        "titleType": 0,
+        "tiles": {
+          "10,0": {
+            "size": [
+              4,
+              8
+            ],
+            "content": {
+              "_type": "List Layout",
+              "_title": "Console",
+              "_glyph": 149,
+              "_showGlyph": false,
+              "Layout/Label position": "TOP",
+              "_children": [
+                {
+                  "_type": "Toggle Switch",
+                  "_source0": "network_table:///SmartDashboard/Use Limit Switches",
+                  "_title": "Use Limit Switches",
+                  "_glyph": 148,
+                  "_showGlyph": false
+                },
+                {
+                  "_type": "Number Slider",
+                  "_source0": "network_table:///SmartDashboard/Drive Power",
+                  "_title": "Robot Speed",
+                  "_glyph": 148,
+                  "_showGlyph": false,
+                  "Slider Settings/Min": 0.0,
+                  "Slider Settings/Max": 1.0,
+                  "Slider Settings/Block increment": 0.0625,
+                  "Visuals/Display value": false
+                },
+                {
+                  "_type": "Number Slider",
+                  "_source0": "network_table:///SmartDashboard/Arm Power",
+                  "_title": "Arm Speed",
+                  "_glyph": 148,
+                  "_showGlyph": false,
+                  "Slider Settings/Min": 0.0,
+                  "Slider Settings/Max": 0.2,
+                  "Slider Settings/Block increment": 0.01,
+                  "Visuals/Display value": false
+                },
+                {
+                  "_type": "Number Slider",
+                  "_source0": "network_table:///SmartDashboard/Gripper Power",
+                  "_title": "Gripper Power",
+                  "_glyph": 148,
+                  "_showGlyph": false,
+                  "Slider Settings/Min": 0.0,
+                  "Slider Settings/Max": 0.2,
+                  "Slider Settings/Block increment": 0.01,
+                  "Visuals/Display value": false
+                }
+              ]
+            }
+          },
+          "14,0": {
+            "size": [
+              4,
+              2
+            ],
+            "content": {
+              "_type": "ComboBox Chooser",
+              "_source0": "network_table:///SmartDashboard/Auto choices",
+              "_title": "Autonomous",
+              "_glyph": 148,
+              "_showGlyph": false
+            }
+          },
+          "18,0": {
+            "size": [
+              8,
+              8
+            ],
+            "content": {
+              "_type": "Grid Layout",
+              "_title": "Grid Layout",
+              "_glyph": 149,
+              "_showGlyph": false,
+              "Layout/Number of columns": 3,
+              "Layout/Number of rows": 3,
+              "Layout/Label position": "BOTTOM",
+              "_children": {
+                "0,0": {
+                  "_type": "Number Bar",
+                  "_source0": "network_table:///SmartDashboard/Arm Position (Encoder)",
+                  "_title": "Arm Encoder",
+                  "_glyph": 148,
+                  "_showGlyph": false,
+                  "Range/Min": -0.0,
+                  "Range/Max": 36.0,
+                  "Range/Center": 0.0,
+                  "Visuals/Num tick marks": 5,
+                  "Visuals/Show text": true,
+                  "Visuals/Orientation": "VERTICAL"
+                },
+                "1,0": {
+                  "_type": "Number Bar",
+                  "_source0": "network_table:///SmartDashboard/Gripper Position (Encoder)",
+                  "_title": "Gripper Encoder",
+                  "_glyph": 148,
+                  "_showGlyph": false,
+                  "Range/Min": -100.0,
+                  "Range/Max": 100.0,
+                  "Range/Center": 0.0,
+                  "Visuals/Num tick marks": 5,
+                  "Visuals/Show text": true,
+                  "Visuals/Orientation": "VERTICAL"
+                }
+              }
+            }
+          },
+          "14,2": {
+            "size": [
+              4,
+              6
+            ],
+            "content": {
+              "_type": "List Layout",
+              "_title": "List Layout",
+              "_glyph": 149,
+              "_showGlyph": false,
+              "Layout/Label position": "BOTTOM",
+              "_children": []
+            }
+          }
+        }
+      }
+    }
+  ],
+  "windowGeometry": {
+    "x": 0.0,
+    "y": 0.0,
+    "width": 1536.0,
+    "height": 816.0
+  }
+}
