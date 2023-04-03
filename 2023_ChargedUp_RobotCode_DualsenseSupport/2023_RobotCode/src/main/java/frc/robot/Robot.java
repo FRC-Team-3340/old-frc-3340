@@ -114,21 +114,21 @@ public DigitalInput forwards_switch = new DigitalInput(1);
 public Servo gripperServo = new Servo(0);
 
 // GLOBAL FOR SMART DASHBOARD.
-private double drivePower[] = {0.25, 0.5, 0.7};
+private double drivePower[] = { 0.525, 0.65};
 private int selectPower = 0;
 private double max_drivePower = drivePower[selectPower]; // Base maximum power for driving the robot
 private double drive_turnRate = 0.75;;
-private double max_armPower = 0.2;
+private double max_armPower = 0.3;
 private double gripperPower = 0.1;
 private boolean useLimitSwitches = false; // IF LIMIT SWITCH BREAKS, SET TO TRUE ON SMARTDASHBOARD OR HERE.
 
-private double presetRotations[] = {-5.0, -15.0, -30.0};
+private double presetRotations[] = {-8.0, -18.0, -36.0};
 private boolean arm_preset = false;
 
 // Autobalance Smart Dashboard compatibility
 public double abMaxAngle = 15.0;
 public double abMinAngle = 2.5;
-public double abMaxPower = 0.25;
+public double abMaxPower = 0.35;
 private EventLoop looper = new EventLoop();
 public BooleanEvent shiftGear = new BooleanEvent(looper, controller::getL3Button);
 
@@ -223,7 +223,7 @@ public void robotInit() {
     shiftGear.ifHigh(() -> {
     if (controller.getL3ButtonPressed() == true) {
         button_held = true;
-    if (selectPower < 2) {
+    if (selectPower < 1) {
         selectPower++;
     } else {
         selectPower = 0;
@@ -266,19 +266,24 @@ public void autonomousInit() {
 public void autonomousPeriodic() {
     switch (m_autoSelected) {
         case kAutobalance:
-            if (autonState == 0 && Math.abs(navX_gyro.getRoll()) > 2.5) {
-                autonState++;
-            } else if (autonState == 1 && (navX_gyro.getRoll() < -2.5)) {
-                autonState++;
-            }
 
             switch(autonState){
                 case 0:
-                robot.arcadeDrive(0.4, 0); 
+                if (autonState == 0 && Math.abs(navX_gyro.getRoll()) > 2.5) {
+                    autonState++;
+                    return;
+                } else{
+                    robot.arcadeDrive(-0.4, 0); 
+                }
                 break;
                 
                 case 1:
-                robot.arcadeDrive(0.2, 0); 
+                if (autonState == 1 && (navX_gyro.getRoll() < -2.5)) {
+                    autonState++;
+                    return;
+                } else {
+                    robot.arcadeDrive(-0.3, 0); 
+                }
                 break;
 
                 case 2:
@@ -293,29 +298,33 @@ public void autonomousPeriodic() {
         default:
             double autonRotations = drive_encoder.getPosition();
             double autonTurn = navX_gyro.getYaw();
+            double autonDrivePower = .35;
             // System.out.println(autonState);
             // System.out.println(autonRotations);
-            // distance * (42cts * 14gearRatio)/(6in*PI) = encoder Cts
+            // distance * (14gearRatio)/(6in*PI) = encoder Cts
             // Copy this for each step in autonomous period
-            System.out.println(autonRotations - autonStartingPostion);
+            //System.out.println(autonState);
             if (autonState == 0) {
-                drive_distance = 18; // 18 in drive distance for this step
-                if (autonRotations - autonStartingPostion > (drive_distance * (42 * 14) / (6 * Math.PI))) {
+                drive_distance = 7.5*18.8; // 18 in drive distance for this step
+                if (Math.abs(autonStartingPostion - autonRotations) > (drive_distance * (8) / (6 * Math.PI))) {
                     autonState++;
                     autonStartingPostion = drive_encoder.getPosition();
+                    return;
                 } else {
-                    robot.arcadeDrive(-0.25, 0); // Speed for this step
-                    System.out.printf("%-20f%f%n", autonStartingPostion, (drive_distance * (42 * 14) / (6 * Math.PI)), drive_encoder.getPosition());
+                    robot.arcadeDrive(-autonDrivePower, 0); // Speed for this step
+                   //System.out.printf("%-20f%-30f%f%n", autonStartingPostion, (drive_distance * (8) / (6 * Math.PI)), drive_encoder.getPosition());
+                   //System.out.printf("%-20f%n", arm_encoder.getPosition());
                 }
             }
             if (autonState == 1) {
-                drive_distance = 36;
-                if (autonRotations - autonStartingPostion > (drive_distance * (42 * 14) / (6 * Math.PI))) {
+                drive_distance = 18.8;
+                if (Math.abs(autonStartingPostion - autonRotations) > (drive_distance * (8) / (6 * Math.PI))) {
                     autonState++;
                     autonStartingPostion = drive_encoder.getPosition();
+                    return;
                 } else {
-                    robot.arcadeDrive(0.25, 0);
-                    System.out.printf("%-20f%f%f%n", autonStartingPostion, (drive_distance * (42 * 14) / (6 * Math.PI)), autonRotations);
+                    robot.arcadeDrive(0, 0);
+                  //System.out.printf("%-20f%-30f%f%n", autonStartingPostion, (drive_distance * (8) / (6 * Math.PI)), autonRotations);
                 }
             }
             if (autonState == 2) {
@@ -328,9 +337,10 @@ public void autonomousPeriodic() {
                 if (autonTurn - autonStartingRotation > turn_angle){
                     autonState++;
                     autonStartingRotation = navX_gyro.getYaw();
+                    return;
                 } else {
                     robot.arcadeDrive(0, 0.5); // CHECK direction
-                    System.out.printf("%-20f%f%f%n", autonTurn, autonStartingRotation, turn_angle);
+                    //System.out.printf("%-20f%f%f%n", autonTurn, autonStartingRotation, turn_angle);
                 }
 
 
@@ -374,6 +384,7 @@ public void teleopPeriodic() {
     move_robot_arm(controller.getRightY(), arm_preset_value, armTargetSpeed);
     toggle_gripper(controller.getR1Button(), controller.getL1Button());
     looper.poll(); // Allows for shifting gears to work :)
+    System.out.printf("%-20f%n", arm_encoder.getPosition()); 
 }
 
 /**
@@ -480,7 +491,7 @@ public void move_robot_arm(double input, double target, double armTargetSpeed) {
     /*Example: If your preset is set to go to -36, it should stop between -35.0 and -37.0. */
     double deadzone = 0.1;      // Set joystick deadzone to prevent drift
     double idle_power = 0.05;   // Set power enough so that the arm holds up but does not sag.
-    System.out.println(input);
+    // System.out.println(input);
 
     if (arm_preset == true) {
         motor_arm.setIdleMode(IdleMode.kCoast);
@@ -496,7 +507,7 @@ public void move_robot_arm(double input, double target, double armTargetSpeed) {
     } else if (arm_preset == false) {
         arm_preset = false;
         if ((reverse_switch.get() == true || forwards_switch.get() == true) && useLimitSwitches != false) {
-            System.out.println(useLimitSwitches);
+            // System.out.println(useLimitSwitches);
             motor_arm.set(0.0); // stops if limit is hit
         } else if (Math.abs(input) > deadzone) {
             if (reverse_switch.get() == true && input < 0) {
