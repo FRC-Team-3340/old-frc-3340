@@ -12,7 +12,7 @@ render()
     return (
         <>
             <Carousel className="showcase-carousel">
-                <Carousel.Item className='carousel-ii'>
+                <Carousel.Item>
                     <img
                         className="d-block w-100"
                         src="holder.js/800x400?text=Team 3340 Group Photo&bg=373940"
