@@ -1,0 +1,13 @@
+.navigation-bar {
+    background: rgb(0,22, 116);
+    font-family: 'Chakra Petch', sans-serif;
+    font-weight: bold;
+}
+
+Nav Nav.Link {
+    transition: transform .2s ease-in;
+}
+
+Nav Nav.Link:hover {
+    transform: scale(1.05);
+}
