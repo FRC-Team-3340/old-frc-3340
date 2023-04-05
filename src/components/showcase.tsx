@@ -15,10 +15,12 @@ render()
                 <Carousel.Item className='carousel-ii'>
                     <img
                         className="d-block w-100"
-                        src="holder.js/800x400?text=First slide&bg=373940"
-                        alt="First slide"
+                        src="holder.js/800x400?text=Team 3340 Group Photo&bg=373940"
+                        alt="Team 3340"
                     />
+                    {/* Each image has a source (src) and alternate text when the mouse hovers over it. */}
                     <Carousel.Caption>
+                        {/* Each carousel section has a header and caption */}
                         <h3>First slide label</h3>
                         <p>This is where recent stuff would go.</p>
                     </Carousel.Caption>
@@ -26,7 +28,7 @@ render()
                 <Carousel.Item>
                     <img
                         className="d-block w-100"
-                        src="holder.js/800x400?text=Second slide&bg=282c34"
+                        src="holder.js/800x400?text=DUMMY&bg=282c34"
                         alt="Second slide"
                     />
 
@@ -38,7 +40,7 @@ render()
                 <Carousel.Item>
                     <img
                         className="d-block w-100"
-                        src="holder.js/800x400?text=Third slide&bg=20232a"
+                        src="holder.js/800x400?text=DUMMY&bg=20232a"
                         alt="Third slide"
                     />
 
